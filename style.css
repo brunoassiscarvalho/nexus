@@ -1,0 +1,154 @@
+/* Color Palette */
+:root {
+    --dark-bg: #1B1919;
+    --accent-color: #616F39;
+    --primary-interactive: #A7D129;
+    --light-text: #F8EEB4;
+    --neu-shadow-light: rgba(248, 238, 180, 0.07); /* Lighter part of the shadow */
+    --neu-shadow-dark: rgba(0, 0, 0, 0.3);       /* Darker part of the shadow */
+}
+
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: var(--dark-bg);
+    color: var(--light-text);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.header {
+    background-color: var(--dark-bg);
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    box-shadow:
+        5px 5px 10px var(--neu-shadow-dark),
+        -5px -5px 10px var(--neu-shadow-light);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.menu-button {
+    background-color: transparent;
+    color: var(--primary-interactive);
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px 12px;
+    margin-right: 20px;
+    border-radius: 8px;
+    box-shadow:
+        3px 3px 6px var(--neu-shadow-dark),
+        -3px -3px 6px var(--neu-shadow-light);
+    transition: box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.menu-button:hover {
+    color: var(--light-text);
+}
+
+.menu-button:active {
+    box-shadow:
+        inset 3px 3px 6px var(--neu-shadow-dark),
+        inset -3px -3px 6px var(--neu-shadow-light);
+    color: var(--accent-color);
+}
+
+.dashboard-title {
+    margin: 0;
+    font-size: 24px;
+    color: var(--light-text);
+}
+
+.drawer-menu {
+    position: fixed;
+    top: 0; /* Adjusted to account for header height later if needed, or make header part of this flow */
+    left: -280px; /* Initially hidden */
+    width: 250px;
+    height: 100%;
+    background-color: var(--dark-bg);
+    padding: 70px 15px 20px 15px; /* Top padding to clear header */
+    box-shadow:
+        5px 0px 10px var(--neu-shadow-dark);
+    transition: left 0.3s ease-in-out;
+    z-index: 999;
+    border-right: 1px solid var(--accent-color); /* Subtle border */
+}
+
+.drawer-menu.open {
+    left: 0;
+}
+
+.drawer-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.drawer-menu li a {
+    display: block;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: var(--light-text);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+    box-shadow:
+        3px 3px 6px var(--neu-shadow-dark),
+        -3px -3px 6px var(--neu-shadow-light);
+}
+
+.drawer-menu li a:hover {
+    background-color: var(--accent-color);
+    color: var(--dark-bg);
+}
+
+.drawer-menu li a:active {
+    box-shadow:
+        inset 3px 3px 6px var(--neu-shadow-dark),
+        inset -3px -3px 6px var(--neu-shadow-light);
+    background-color: var(--primary-interactive);
+    color: var(--dark-bg);
+}
+
+.content {
+    margin-top: 70px; /* Adjust based on header height */
+    padding: 20px;
+    flex-grow: 1;
+    margin-left: 0; /* Will be adjusted by JS if drawer is sticky */
+    transition: margin-left 0.3s ease-in-out;
+}
+
+.widget {
+    background-color: var(--dark-bg);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow:
+        8px 8px 15px var(--neu-shadow-dark),
+        -8px -8px 15px var(--neu-shadow-light);
+}
+
+.widget h2 {
+    color: var(--primary-interactive);
+    margin-top: 0;
+    border-bottom: 1px solid var(--accent-color);
+    padding-bottom: 10px;
+}
+
+/* Adjust content margin when drawer is open for a smoother experience */
+body.drawer-open .content {
+    margin-left: 265px; /* Width of drawer + some padding */
+}
+
+/* Optional: Slightly different shadow for "pressed" state on active elements */
+.menu-button:active, .drawer-menu li a:active {
+    box-shadow:
+        inset 4px 4px 8px var(--neu-shadow-dark),
+        inset -4px -4px 8px var(--neu-shadow-light);
+}
