@@ -1,0 +1,38 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+h1 {
+    color: #0056b3;
+}
+
+/* Styling for the custom-menu element itself (outside its Shadow DOM) */
+custom-menu {
+    margin-bottom: 20px;
+    /* Example: if you want all menus to have a certain max-width or specific margin */
+}
+
+/* You can also define global styles that can penetrate Shadow DOM if needed,
+   using CSS Custom Properties or by styling the host from outside.
+   However, the components themselves have their own encapsulated styles for better modularity.
+*/
+
+/* Example of how you might style menu-button elements globally if they didn't use Shadow DOM
+   or if you are targeting attributes.
+   Since menu-button uses Shadow DOM, its internal button styling is encapsulated.
+   Global styles like this won't affect the button inside menu-button's shadow root directly,
+   unless using CSS custom properties passed down.
+*/
+/*
+menu-button button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+menu-button button:hover {
+    background-color: #0056b3;
+}
+*/
