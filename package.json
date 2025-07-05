@@ -1,0 +1,23 @@
+{
+  "name": "nexus",
+  "version": "1.0.0",
+  "description": "A vanilla JS project dashboard with neuromorphic styling, header, nav bar, and drawer menu, including Jest tests.",
+  "main": "script.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "javascript",
+    "dashboard",
+    "neuromorphism",
+    "jest",
+    "vanilla-js",
+    "nexus"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jsdom": "^24.0.0"
+  }
+}
