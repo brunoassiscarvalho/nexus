@@ -22,13 +22,28 @@
         </ul>
     </nav>
 
-    <main class="content">
+    <main class="content" id="mainContent" style="display: none;">
         <div class="widget">
             <h2>Analytics Page</h2>
             <p>Analytics content will go here.</p>
         </div>
     </main>
 
+    <div id="loadingIndicator" style="text-align: center; padding: 50px; font-size: 20px;">
+        Loading Analytics...
+    </div>
+
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainContent = document.getElementById('mainContent');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+
+            setTimeout(() => {
+                loadingIndicator.style.display = 'none';
+                mainContent.style.display = 'block';
+            }, 3000);
+        });
+    </script>
 </body>
 </html>
