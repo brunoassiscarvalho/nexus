@@ -1,42 +1,34 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const menuButton = document.getElementById('menuButton');
-    const drawerMenu = document.getElementById('drawerMenu');
-    const content = document.querySelector('.content'); // To adjust margin
-    const body = document.body;
+    const drawerMenuComponent = document.querySelector('drawer-menu');
+    const navHeaderComponent = document.querySelector('nav-header');
 
-    if (menuButton && drawerMenu) {
-        menuButton.addEventListener('click', () => {
-            drawerMenu.classList.toggle('open');
-            body.classList.toggle('drawer-open'); // Toggle class on body
-
-            // Optional: Add ARIA attributes for accessibility
-            const isExpanded = menuButton.getAttribute('aria-expanded') === 'true' || false;
-            menuButton.setAttribute('aria-expanded', !isExpanded);
-            drawerMenu.setAttribute('aria-hidden', isExpanded);
-        });
-    }
-
-    // Optional: Close drawer when clicking outside of it or on a nav link
+    // Close drawer when clicking outside of it
     document.addEventListener('click', (event) => {
-        // Close if drawer is open, the click is outside the drawer, and not on the menu button
-        if (drawerMenu.classList.contains('open') && !drawerMenu.contains(event.target) && event.target !== menuButton) {
-            drawerMenu.classList.remove('open');
-            body.classList.remove('drawer-open');
-            menuButton.setAttribute('aria-expanded', 'false');
-            drawerMenu.setAttribute('aria-hidden', 'true');
-        }
-    });
+        if (!drawerMenuComponent || !navHeaderComponent) return;
 
-    // Close drawer when a navigation link is clicked (optional, good for SPA-like feel)
-    const navLinks = drawerMenu.querySelectorAll('a');
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            if (drawerMenu.classList.contains('open')) {
-                drawerMenu.classList.remove('open');
-                body.classList.remove('drawer-open');
-                menuButton.setAttribute('aria-expanded', 'false');
-                drawerMenu.setAttribute('aria-hidden', 'true');
+        const isClickInsideDrawer = drawerMenuComponent.contains(event.target) ||
+                                   (drawerMenuComponent.shadowRoot && drawerMenuComponent.shadowRoot.contains(event.target));
+        const isClickInsideHeader = navHeaderComponent.contains(event.target) ||
+                                   (navHeaderComponent.shadowRoot && navHeaderComponent.shadowRoot.contains(event.target));
+
+
+        if (drawerMenuComponent.isOpen && !isClickInsideDrawer && !isClickInsideHeader) {
+            // Check if the click was on the menu button itself (which is inside navHeaderComponent's shadow DOM)
+            // The menu button's own click handler in nav-header.js will toggle the menu.
+            // So, if the click is on the menu button, we don't want to immediately close it here.
+            // The `navHeaderComponent.shadowRoot.contains(event.target)` check above handles clicks within the header.
+            // If the click was specifically on the menu button, its handler would have already run.
+            // This logic is tricky because the menu button *toggles*. If it was *opening* the menu,
+            // this listener might immediately close it.
+            // A robust way is to check if the event path for the click includes the menu button.
+            const path = event.composedPath();
+            const menuButtonInHeader = navHeaderComponent.shadowRoot.getElementById('menuButton');
+
+            if (path.includes(menuButtonInHeader)) {
+                // Click was on the menu button, its own handler in nav-header.js manages the toggle.
+                return;
             }
-        });
+            drawerMenuComponent.close();
+        }
     });
 });
