@@ -27,32 +27,51 @@ class DrawerMenu extends HTMLElement {
                     padding: 0;
                     margin: 0;
                 }
-                 /* Link to global styles */
+                /* Link to global styles */
                 :host {
-                    display: contents;
+                    display: block; /* Ensure the component itself is a block-level element */
+                    position: fixed;
+                    top: 0;
+                    left: -280px; /* Initially hidden */
+                    width: 250px;
+                    height: 100%;
+                    background-color: var(--dark-bg);
+                    padding: 70px 15px 20px 15px; /* Top padding to clear header */
+                    box-shadow: 5px 0px 10px var(--neu-shadow-dark);
+                    transition: left 0.3s ease-in-out;
+                    z-index: 999; /* Below header (1000) but above content */
+                    border-right: 1px solid var(--accent-color);
+                    box-sizing: border-box; /* Ensure padding doesn't increase width */
+                }
+                :host(.open) {
+                    left: 0;
+                }
+                ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
                 }
             </style>
-            <nav class="drawer-menu" id="drawerMenuInternal">
+            <nav> <!-- Removed class .drawer-menu as styles are on :host -->
                 <ul>
                     <slot></slot> <!-- This will render the menu-item components -->
                 </ul>
             </nav>
         `;
         this._isOpen = false;
-        this._drawerElement = this.shadowRoot.getElementById('drawerMenuInternal');
+        // No need for this._drawerElement if styles are on :host
     }
 
     toggle() {
         this._isOpen = !this._isOpen;
-        this._drawerElement.classList.toggle('open', this._isOpen);
-        document.body.classList.toggle('drawer-open', this._isOpen); // Affects global body class for content margin
+        this.classList.toggle('open', this._isOpen); // Toggle class on the host element
+        document.body.classList.toggle('drawer-open', this._isOpen);
 
-        // Accessibility
         const menuButton = document.querySelector('nav-header')?.shadowRoot.getElementById('menuButton');
         if (menuButton) {
-            menuButton.setAttribute('aria-expanded', this._isOpen);
+            menuButton.setAttribute('aria-expanded', this._isOpen.toString());
         }
-        this.setAttribute('aria-hidden', !this._isOpen);
+        this.setAttribute('aria-hidden', (!this._isOpen).toString());
     }
 
     open() {
