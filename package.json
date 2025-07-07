@@ -19,5 +19,8 @@
   "devDependencies": {
     "jest": "^29.7.0",
     "jsdom": "^24.0.0"
+  },
+  "dependencies": {
+    "lit": "^3.3.0"
   }
 }
