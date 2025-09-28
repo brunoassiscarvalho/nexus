@@ -1,31 +1,32 @@
-# shadcn/ui monorepo template
+# Turborepo react-native starter
 
-This template is for creating a monorepo with shadcn/ui.
+This is an official starter Turborepo.
 
-## Usage
+## Using this example
 
-```bash
-pnpm dlx shadcn@latest init
+Run the following command:
+
+```sh
+npx create-turbo@latest -e with-react-native-web
 ```
 
-## Adding components
+## What's inside?
 
-To add components to your app, run the following command at the root of your `web` app:
+This Turborepo includes the following packages/apps:
 
-```bash
-pnpm dlx shadcn@latest add button -c apps/web
-```
+### Apps and Packages
 
-This will place the ui components in the `packages/ui/src/components` directory.
+- `native`: a [react-native](https://reactnative.dev/) app built with [expo](https://docs.expo.dev/)
+- `web`: a [Next.js](https://nextjs.org/) app built with [react-native-web](https://necolas.github.io/react-native-web/)
+- `@/components/ui`: a stub [react-native](https://reactnative.dev/) component library shared by both `web` and `native` applications
+- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
 
-## Tailwind
+Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
-Your `tailwind.config.ts` and `globals.css` are already set up to use the components from the `ui` package.
+### Utilities
 
-## Using components
+This Turborepo has some additional tools already setup for you:
 
-To use the components in your app, import them from the `ui` package.
-
-```tsx
-import { Button } from "@workspace/ui/components/button"
-```
+- [Expo](https://docs.expo.dev/) for native development
+- [TypeScript](https://www.typescriptlang.org/) for static type checking
+- [Prettier](https://prettier.io) for code formatting

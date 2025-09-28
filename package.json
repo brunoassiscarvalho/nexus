@@ -1,22 +1,25 @@
 {
-  "name": "shadcn-ui-monorepo",
-  "version": "0.0.1",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "run:expo": "cd apps/expo-app && yarn start",
+    "run:next": "cd apps/next && yarn dev",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --ignore-path .gitignore",
+    "postinstall": "patch-package",
+    "eject": "npx @gluestack-ui/universal-cli@latest eject"
   },
   "devDependencies": {
-    "@workspace/eslint-config": "workspace:*",
-    "@workspace/typescript-config": "workspace:*",
-    "prettier": "^3.6.2",
-    "turbo": "^2.5.5",
-    "typescript": "5.7.3"
+    "prettier": "^3.1.1",
+    "turbo": "latest"
   },
-  "packageManager": "pnpm@10.4.1",
+  "packageManager": "yarn@1.22.19",
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   }
 }
