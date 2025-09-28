@@ -1,23 +1,22 @@
 {
-  "name": "nexus",
-  "version": "1.0.0",
-  "description": "A vanilla JS project dashboard with neuromorphic styling, header, nav bar, and drawer menu, including Jest tests.",
-  "main": "script.js",
+  "name": "shadcn-ui-monorepo",
+  "version": "0.0.1",
+  "private": true,
   "scripts": {
-    "test": "jest"
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
-  "keywords": [
-    "javascript",
-    "dashboard",
-    "neuromorphism",
-    "jest",
-    "vanilla-js",
-    "nexus"
-  ],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "jest": "^29.7.0",
-    "jsdom": "^24.0.0"
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.5",
+    "typescript": "5.7.3"
+  },
+  "packageManager": "pnpm@10.4.1",
+  "engines": {
+    "node": ">=20"
   }
 }
