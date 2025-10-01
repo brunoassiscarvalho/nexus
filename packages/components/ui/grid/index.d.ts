@@ -1,6 +1,7 @@
-import React from "react";
-import type { VariantProps } from "@gluestack-ui/nativewind-utils";
-declare const Grid: React.ForwardRefExoticComponent<import("react-native").ViewProps & VariantProps<import("@gluestack-ui/nativewind-utils/types").TVReturnType<{} | {} | {}, undefined, "w-full box-border flex-row flex-wrap justify-start grid grid-cols-12", import("tailwind-variants/dist/config").TVConfig<unknown, {} | {}>, {} | {}, undefined, import("@gluestack-ui/nativewind-utils/types").TVReturnType<unknown, undefined, "w-full box-border flex-row flex-wrap justify-start grid grid-cols-12", import("tailwind-variants/dist/config").TVConfig<unknown, {} | {}>, unknown, unknown, undefined>>> & {
+import React from 'react';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
+import { View, ViewProps } from 'react-native';
+declare const Grid: React.ForwardRefExoticComponent<ViewProps & VariantProps<import("@gluestack-ui/nativewind-utils/types").TVReturnType<{} | {} | {}, undefined, "w-full grid grid-cols-12" | "w-full box-border flex-row flex-wrap justify-start", import("tailwind-variants/dist/config").TVConfig<unknown, {} | {}>, {} | {}, undefined, import("@gluestack-ui/nativewind-utils/types").TVReturnType<unknown, undefined, "w-full grid grid-cols-12" | "w-full box-border flex-row flex-wrap justify-start", import("tailwind-variants/dist/config").TVConfig<unknown, {} | {}>, unknown, unknown, undefined>>> & {
     gap?: number | undefined;
     rowGap?: number | undefined;
     columnGap?: number | undefined;
@@ -13,11 +14,11 @@ declare const Grid: React.ForwardRefExoticComponent<import("react-native").ViewP
     _extra: {
         className: string;
     };
-} & React.RefAttributes<unknown>>;
-declare const GridItem: React.ForwardRefExoticComponent<import("react-native").ViewProps & VariantProps<import("@gluestack-ui/nativewind-utils/types").TVReturnType<{} | {} | {}, undefined, "w-full col-span-1 " | "w-full col-span-1 w-auto", import("tailwind-variants/dist/config").TVConfig<unknown, {} | {}>, {} | {}, undefined, import("@gluestack-ui/nativewind-utils/types").TVReturnType<unknown, undefined, "w-full col-span-1 " | "w-full col-span-1 w-auto", import("tailwind-variants/dist/config").TVConfig<unknown, {} | {}>, unknown, unknown, undefined>>> & {
+} & React.RefAttributes<View>>;
+declare const GridItem: React.ForwardRefExoticComponent<ViewProps & VariantProps<import("@gluestack-ui/nativewind-utils/types").TVReturnType<{} | {} | {}, undefined, "w-full " | "w-full w-auto col-span-1", import("tailwind-variants/dist/config").TVConfig<unknown, {} | {}>, {} | {}, undefined, import("@gluestack-ui/nativewind-utils/types").TVReturnType<unknown, undefined, "w-full " | "w-full w-auto col-span-1", import("tailwind-variants/dist/config").TVConfig<unknown, {} | {}>, unknown, unknown, undefined>>> & {
     index?: number | undefined;
     _extra: {
         className: string;
     };
-} & React.RefAttributes<unknown>>;
+} & React.RefAttributes<View>>;
 export { Grid, GridItem };

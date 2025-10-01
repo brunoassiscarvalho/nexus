@@ -4,7 +4,7 @@ import { createProgress } from '@gluestack-ui/progress';
 import { View } from 'react-native';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { withStyleContext, useStyleContext, } from '@gluestack-ui/nativewind-utils/withStyleContext';
-import { cssInterop } from '@gluestack-ui/nativewind-utils/cssInterop';
+import { cssInterop } from 'nativewind';
 const SCOPE = 'PROGRESS';
 export const UIProgress = createProgress({
     Root: withStyleContext(View, SCOPE),

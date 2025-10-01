@@ -1,8 +1,7 @@
 import React from 'react';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-declare const Text: React.ForwardRefExoticComponent<{
-    className?: string | undefined;
-} & import("react-native").TextProps & VariantProps<import("@gluestack-ui/nativewind-utils/types").TVReturnType<{
+import { Text as RNText } from 'react-native';
+declare const Text: React.ForwardRefExoticComponent<import("react-native").TextProps & VariantProps<import("@gluestack-ui/nativewind-utils/types").TVReturnType<{
     isTruncated: {
         true: string;
     };
@@ -143,7 +142,7 @@ declare const Text: React.ForwardRefExoticComponent<{
             base?: import("tailwind-merge").ClassNameValue;
         };
     };
-}), undefined, "text-typography-700 font-normal font-body " | "text-typography-700 font-normal font-body font-sans tracking-sm my-0 bg-transparent border-0 box-border display-inline list-none margin-0 padding-0 position-relative text-start no-underline whitespace-pre-wrap word-wrap-break-word", import("tailwind-variants/dist/config").TVConfig<{
+}), undefined, "text-typography-700 font-body " | "text-typography-700 font-body font-sans tracking-sm my-0 bg-transparent border-0 box-border display-inline list-none margin-0 padding-0 position-relative text-start no-underline whitespace-pre-wrap word-wrap-break-word", import("tailwind-variants/dist/config").TVConfig<{
     isTruncated: {
         true: string;
     };
@@ -283,7 +282,7 @@ declare const Text: React.ForwardRefExoticComponent<{
     highlight: {
         true: string;
     };
-}, undefined, "text-typography-700 font-normal font-body " | "text-typography-700 font-normal font-body font-sans tracking-sm my-0 bg-transparent border-0 box-border display-inline list-none margin-0 padding-0 position-relative text-start no-underline whitespace-pre-wrap word-wrap-break-word", import("tailwind-variants/dist/config").TVConfig<{
+}, undefined, "text-typography-700 font-body " | "text-typography-700 font-body font-sans tracking-sm my-0 bg-transparent border-0 box-border display-inline list-none margin-0 padding-0 position-relative text-start no-underline whitespace-pre-wrap word-wrap-break-word", import("tailwind-variants/dist/config").TVConfig<{
     isTruncated: {
         true: string;
     };
@@ -353,5 +352,5 @@ declare const Text: React.ForwardRefExoticComponent<{
     highlight: {
         true: string;
     };
-}>, unknown, unknown, undefined>>> & React.RefAttributes<unknown>>;
+}>, unknown, unknown, undefined>>> & React.RefAttributes<RNText>>;
 export { Text };

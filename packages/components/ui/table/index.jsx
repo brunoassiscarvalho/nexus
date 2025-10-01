@@ -14,8 +14,8 @@ const TableHeader = React.forwardRef(({ className, ...props }, ref) => {
         };
     }, []);
     return (<TableHeaderContext.Provider value={contextValue}>
-        <ExpoTHead ref={ref} className={tableHeaderStyle({ class: className })} {...props}/>
-      </TableHeaderContext.Provider>);
+      <ExpoTHead ref={ref} className={tableHeaderStyle({ class: className })} {...props}/>
+    </TableHeaderContext.Provider>);
 });
 const TableBody = React.forwardRef(({ className, ...props }, ref) => {
     return (<ExpoTBody ref={ref} className={tableBodyStyle({ class: className })} {...props}/>);
@@ -27,8 +27,8 @@ const TableFooter = React.forwardRef(({ className, ...props }, ref) => {
         };
     }, []);
     return (<TableFooterContext.Provider value={contextValue}>
-        <ExpoTFoot ref={ref} className={tableFooterStyle({ class: className })} {...props}/>
-      </TableFooterContext.Provider>);
+      <ExpoTFoot ref={ref} className={tableFooterStyle({ class: className })} {...props}/>
+    </TableFooterContext.Provider>);
 });
 const TableHead = React.forwardRef(({ useRNView = false, className, ...props }, ref) => {
     if (useRNView) {

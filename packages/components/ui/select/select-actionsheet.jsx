@@ -4,14 +4,41 @@ import { Pressable, View, Text, ScrollView, VirtualizedList, FlatList, SectionLi
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { withStyleContextAndStates } from '@gluestack-ui/nativewind-utils/withStyleContextAndStates';
-import { cssInterop } from '@gluestack-ui/nativewind-utils/cssInterop';
+import { cssInterop } from 'nativewind';
 import { Motion, AnimatePresence, createMotionAnimatedComponent, } from '@legendapp/motion';
-import React from 'react';
+import React, { useMemo } from 'react';
+import { Svg } from 'react-native-svg';
 const AnimatedPressable = createMotionAnimatedComponent(Pressable);
+const PrimitiveIcon = React.forwardRef(({ height, width, fill, color, size, stroke, as: AsComp, ...props }, ref) => {
+    const sizeProps = useMemo(() => {
+        if (size)
+            return { size };
+        if (height && width)
+            return { height, width };
+        if (height)
+            return { height };
+        if (width)
+            return { width };
+        return {};
+    }, [size, height, width]);
+    let colorProps = {};
+    if (color) {
+        colorProps = { ...colorProps, color: color };
+    }
+    if (stroke) {
+        colorProps = { ...colorProps, stroke: stroke };
+    }
+    if (fill) {
+        colorProps = { ...colorProps, fill: fill };
+    }
+    if (AsComp) {
+        return <AsComp ref={ref} {...sizeProps} {...colorProps} {...props}/>;
+    }
+    return (<Svg ref={ref} height={height} width={width} {...colorProps} {...props}/>);
+});
 export const UIActionsheet = createActionsheet({
     Root: View,
     Content: withStyleContext(Motion.View),
-    // @ts-ignore
     Item: Platform.OS === 'web'
         ? withStyleContext(Pressable)
         : withStyleContextAndStates(Pressable),
@@ -24,7 +51,7 @@ export const UIActionsheet = createActionsheet({
     FlatList: FlatList,
     SectionList: SectionList,
     SectionHeaderText: H4,
-    Icon: View,
+    Icon: PrimitiveIcon,
     AnimatePresence: AnimatePresence,
 });
 cssInterop(UIActionsheet, { className: 'style' });
@@ -34,9 +61,26 @@ cssInterop(UIActionsheet.ItemText, { className: 'style' });
 cssInterop(UIActionsheet.DragIndicator, { className: 'style' });
 cssInterop(UIActionsheet.DragIndicatorWrapper, { className: 'style' });
 cssInterop(UIActionsheet.Backdrop, { className: 'style' });
-cssInterop(UIActionsheet.ScrollView, { className: 'style' });
-cssInterop(UIActionsheet.VirtualizedList, { className: 'style' });
-cssInterop(UIActionsheet.FlatList, { className: 'style' });
+cssInterop(UIActionsheet.ScrollView, {
+    className: 'style',
+    contentContainerClassName: 'contentContainerStyle',
+    indicatorClassName: 'indicatorStyle',
+});
+cssInterop(UIActionsheet.VirtualizedList, {
+    className: 'style',
+    ListFooterComponentClassName: 'ListFooterComponentStyle',
+    ListHeaderComponentClassName: 'ListHeaderComponentStyle',
+    contentContainerClassName: 'contentContainerStyle',
+    indicatorClassName: 'indicatorStyle',
+});
+cssInterop(UIActionsheet.FlatList, {
+    className: 'style',
+    ListFooterComponentClassName: 'ListFooterComponentStyle',
+    ListHeaderComponentClassName: 'ListHeaderComponentStyle',
+    columnWrapperClassName: 'columnWrapperStyle',
+    contentContainerClassName: 'contentContainerStyle',
+    indicatorClassName: 'indicatorStyle',
+});
 cssInterop(UIActionsheet.SectionList, { className: 'style' });
 cssInterop(UIActionsheet.SectionHeaderText, { className: 'style' });
 cssInterop(UIActionsheet.Icon, { className: 'style' });

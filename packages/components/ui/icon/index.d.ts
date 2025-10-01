@@ -1,12 +1,120 @@
-import React from "react";
-import { createIcon } from "@gluestack-ui/icon";
-export declare const UIIcon: import("@gluestack-ui/icon/lib/typescript/createIcon").IIconComponentType<(Omit<any, "ref"> & React.RefAttributes<unknown>) | {
+import React from 'react';
+import { createIcon } from '@gluestack-ui/icon';
+import { Svg } from 'react-native-svg';
+import { VariantProps } from '@gluestack-ui/nativewind-utils';
+type IPrimitiveIcon = {
+    height?: number | string;
+    width?: number | string;
+    fill?: string;
+    color?: string;
+    size?: number | string;
+    stroke?: string;
+    as?: React.ElementType;
+    className?: string;
+    classNameColor?: string;
+};
+export declare const UIIcon: import("@gluestack-ui/icon/lib/typescript/createIcon").IIconComponentType<(IPrimitiveIcon & React.RefAttributes<Svg>) | {
     fill?: import("react-native").ColorValue | undefined;
     stroke?: import("react-native").ColorValue | undefined;
 }>;
-export declare const Icon: React.ForwardRefExoticComponent<Omit<any, "ref"> & React.RefAttributes<unknown>>;
-type ParameterTypes = Omit<Parameters<typeof createIcon>[0], "Root">;
-declare const createIconUI: ({ ...props }: ParameterTypes) => React.ForwardRefExoticComponent<Omit<any, "ref"> & React.RefAttributes<unknown>>;
+declare const iconStyle: import("@gluestack-ui/nativewind-utils/types").TVReturnType<{
+    size: {
+        '2xs': string;
+        xs: string;
+        sm: string;
+        md: string;
+        lg: string;
+        xl: string;
+    };
+} | ({
+    size: {
+        '2xs': string;
+        xs: string;
+        sm: string;
+        md: string;
+        lg: string;
+        xl: string;
+    };
+} & {
+    size: {
+        '2xs': import("tailwind-merge").ClassNameValue | {
+            base?: import("tailwind-merge").ClassNameValue;
+        };
+        xs: import("tailwind-merge").ClassNameValue | {
+            base?: import("tailwind-merge").ClassNameValue;
+        };
+        sm: import("tailwind-merge").ClassNameValue | {
+            base?: import("tailwind-merge").ClassNameValue;
+        };
+        md: import("tailwind-merge").ClassNameValue | {
+            base?: import("tailwind-merge").ClassNameValue;
+        };
+        lg: import("tailwind-merge").ClassNameValue | {
+            base?: import("tailwind-merge").ClassNameValue;
+        };
+        xl: import("tailwind-merge").ClassNameValue | {
+            base?: import("tailwind-merge").ClassNameValue;
+        };
+    };
+}), undefined, "text-typography-950 fill-none", import("tailwind-variants/dist/config").TVConfig<{
+    size: {
+        '2xs': string;
+        xs: string;
+        sm: string;
+        md: string;
+        lg: string;
+        xl: string;
+    };
+}, {
+    size: {
+        '2xs': string;
+        xs: string;
+        sm: string;
+        md: string;
+        lg: string;
+        xl: string;
+    };
+}>, {
+    size: {
+        '2xs': string;
+        xs: string;
+        sm: string;
+        md: string;
+        lg: string;
+        xl: string;
+    };
+}, undefined, import("@gluestack-ui/nativewind-utils/types").TVReturnType<{
+    size: {
+        '2xs': string;
+        xs: string;
+        sm: string;
+        md: string;
+        lg: string;
+        xl: string;
+    };
+}, undefined, "text-typography-950 fill-none", import("tailwind-variants/dist/config").TVConfig<{
+    size: {
+        '2xs': string;
+        xs: string;
+        sm: string;
+        md: string;
+        lg: string;
+        xl: string;
+    };
+}, {
+    size: {
+        '2xs': string;
+        xs: string;
+        sm: string;
+        md: string;
+        lg: string;
+        xl: string;
+    };
+}>, unknown, unknown, undefined>>;
+type IIConProps = IPrimitiveIcon & VariantProps<typeof iconStyle> & React.ComponentPropsWithoutRef<typeof UIIcon>;
+export declare const Icon: React.ForwardRefExoticComponent<IIConProps & React.RefAttributes<Svg>>;
+type ParameterTypes = Omit<Parameters<typeof createIcon>[0], 'Root'>;
+declare const createIconUI: ({ ...props }: ParameterTypes) => React.ForwardRefExoticComponent<React.RefAttributes<Svg>>;
 export { createIconUI as createIcon };
 declare const AddIcon: import("@gluestack-ui/icon/lib/typescript/createIcon").IIconComponentType<import("react-native-svg").SvgProps | {
     fill?: import("react-native").ColorValue | undefined;

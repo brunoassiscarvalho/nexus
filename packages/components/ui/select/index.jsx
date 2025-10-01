@@ -7,9 +7,11 @@ import { createSelect } from '@gluestack-ui/select';
 import { cssInterop } from 'nativewind';
 import { Actionsheet, ActionsheetContent, ActionsheetItem, ActionsheetItemText, ActionsheetDragIndicator, ActionsheetDragIndicatorWrapper, ActionsheetBackdrop, ActionsheetScrollView, ActionsheetVirtualizedList, ActionsheetFlatList, ActionsheetSectionList, ActionsheetSectionHeaderText, } from './select-actionsheet';
 import { Pressable, View, TextInput, Platform } from 'react-native';
-/** Select Components */
+const SelectTriggerWrapper = React.forwardRef(({ ...props }, ref) => {
+    return <Pressable {...props} ref={ref}/>;
+});
 const selectIconStyle = tva({
-    base: '',
+    base: 'text-background-500 fill-none',
     parentVariants: {
         size: {
             '2xs': 'h-3 w-3',
@@ -41,13 +43,13 @@ const selectTriggerStyle = tva({
     },
 });
 const selectInputStyle = tva({
-    base: 'py-auto px-3 placeholder:text-typography-500 flex-1 web:w-full h-full text-typography-900 pointer-events-none web:outline-none',
+    base: 'py-auto px-3 placeholder:text-typography-500 web:w-full h-full text-typography-900 pointer-events-none web:outline-none ios:leading-[0px]',
     parentVariants: {
         size: {
-            xl: 'text-xl leading-[0px]',
-            lg: 'text-lg leading-[0px]',
-            md: 'text-base leading-[0px]',
-            sm: 'text-sm leading-[0px]',
+            xl: 'text-xl',
+            lg: 'text-lg',
+            md: 'text-base',
+            sm: 'text-sm',
         },
         variant: {
             underlined: 'px-0',
@@ -56,21 +58,39 @@ const selectInputStyle = tva({
         },
     },
 });
-const PrimitiveIcon = React.forwardRef(({ height, width, fill = 'none', color, size, as: AsComp, ...props }, ref) => {
+const PrimitiveIcon = React.forwardRef(({ height, width, fill, color, classNameColor, size, stroke, as: AsComp, ...props }, ref) => {
+    color = color ?? classNameColor;
     const sizeProps = useMemo(() => {
-        return size ? { size } : { height, width };
+        if (size)
+            return { size };
+        if (height && width)
+            return { height, width };
+        if (height)
+            return { height };
+        if (width)
+            return { width };
+        return {};
     }, [size, height, width]);
-    if (AsComp) {
-        return (<AsComp ref={ref} fill={fill} color={color} {...props} {...sizeProps}/>);
+    let colorProps = {};
+    if (fill) {
+        colorProps = { ...colorProps, fill: fill };
     }
-    return (<Svg ref={ref} height={height} width={width} fill={fill} color={color} {...props}/>);
+    if (stroke !== 'currentColor') {
+        colorProps = { ...colorProps, stroke: stroke };
+    }
+    else if (stroke === 'currentColor' && color !== undefined) {
+        colorProps = { ...colorProps, stroke: color };
+    }
+    if (AsComp) {
+        return <AsComp ref={ref} {...props} {...sizeProps} {...colorProps}/>;
+    }
+    return (<Svg ref={ref} height={height} width={width} {...colorProps} {...props}/>);
 });
 const UISelect = createSelect({
     Root: View,
-    // @ts-ignore
     Trigger: Platform.OS === 'web'
-        ? withStyleContext(Pressable)
-        : withStyleContextAndStates(Pressable),
+        ? withStyleContext(SelectTriggerWrapper)
+        : withStyleContextAndStates(SelectTriggerWrapper),
     Input: TextInput,
     Icon: PrimitiveIcon,
 }, {
@@ -88,18 +108,20 @@ const UISelect = createSelect({
     SectionHeaderText: ActionsheetSectionHeaderText,
 });
 cssInterop(UISelect, { className: 'style' });
-cssInterop(UISelect.Input, { className: 'style' });
-cssInterop(UISelect.Trigger, { className: 'style' });
-// @ts-ignore
+cssInterop(UISelect.Input, {
+    className: { target: 'style', nativeStyleToProp: { textAlign: true } },
+});
+cssInterop(SelectTriggerWrapper, { className: 'style' });
+//@ts-ignore
 cssInterop(UISelect.Icon, {
     className: {
         target: 'style',
         nativeStyleToProp: {
-            height: 'height',
-            width: 'width',
-            //@ts-ignore
-            fill: 'fill',
-            color: 'color',
+            height: true,
+            width: true,
+            fill: true,
+            color: 'classNameColor',
+            stroke: true,
         },
     },
 });
@@ -125,14 +147,14 @@ const SelectInput = React.forwardRef(({ className, ...props }, ref) => {
             },
         })} ref={ref} {...props}/>);
 });
-const SelectIcon = React.forwardRef(({ className, size, color = 'gray', ...props }, ref) => {
+const SelectIcon = React.forwardRef(({ className, size, ...props }, ref) => {
     const { size: parentSize } = useStyleContext();
     if (typeof size === 'number') {
-        return (<UISelect.Icon ref={ref} {...props} color={color} className={selectIconStyle({ class: className })} size={size}/>);
+        return (<UISelect.Icon ref={ref} {...props} className={selectIconStyle({ class: className })} size={size}/>);
     }
     else if ((props?.height !== undefined || props?.width !== undefined) &&
         size === undefined) {
-        return (<UISelect.Icon ref={ref} {...props} color={color} className={selectIconStyle({ class: className })}/>);
+        return (<UISelect.Icon ref={ref} {...props} className={selectIconStyle({ class: className })}/>);
     }
     return (<UISelect.Icon className={selectIconStyle({
             class: className,
@@ -140,9 +162,7 @@ const SelectIcon = React.forwardRef(({ className, size, color = 'gray', ...props
             parentVariants: {
                 size: parentSize,
             },
-        })} ref={ref} 
-    //@ts-ignore
-    color={color} {...props}/>);
+        })} ref={ref} {...props}/>);
 });
 Select.displayName = 'Select';
 SelectTrigger.displayName = 'SelectTrigger';

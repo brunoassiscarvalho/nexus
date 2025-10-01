@@ -4,7 +4,7 @@ import { createTooltip } from '@gluestack-ui/tooltip';
 import { View, Text, Platform } from 'react-native';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
-import { cssInterop } from '@gluestack-ui/nativewind-utils/cssInterop';
+import { cssInterop } from 'nativewind';
 import { withStyleContextAndStates } from '@gluestack-ui/nativewind-utils/withStyleContextAndStates';
 import { Motion, AnimatePresence } from '@legendapp/motion';
 export const UITooltip = createTooltip({
@@ -22,7 +22,7 @@ const tooltipContentStyle = tva({
     base: 'py-1 px-3 rounded-sm bg-background-900 web:pointer-events-auto',
 });
 const tooltipTextStyle = tva({
-    base: 'font-normal tracking-normal text-red-400 web:select-none text-xs text-typography-50',
+    base: 'font-normal tracking-normal web:select-none text-xs text-typography-50',
     variants: {
         isTruncated: {
             true: {
@@ -69,27 +69,10 @@ export const Tooltip = React.forwardRef(({ className, ...props }, ref) => {
     return (<UITooltip ref={ref} className={tooltipStyle({ class: className })} {...props}/>);
 });
 export const TooltipContent = React.forwardRef(({ className, ...props }, ref) => {
-    return (<UITooltip.Content ref={ref} initial={{
-            opacity: 0,
-            scale: 0.5,
-        }} animate={{
-            opacity: 1,
-            scale: 1,
-        }} exit={{
-            opacity: 0,
-            scale: 0.5,
-        }} transition={{
-            type: 'spring',
-            damping: 18,
-            stiffness: 50,
-            opacity: {
-                type: 'timing',
-                duration: 250,
-            },
-        }} {...props} className={tooltipContentStyle({
+    return (<UITooltip.Content ref={ref} {...props} className={tooltipContentStyle({
             class: className,
         })} pointerEvents="auto"/>);
 });
-export const TooltipText = React.forwardRef(({ className, size = 'md', ...props }, ref) => {
+export const TooltipText = React.forwardRef(({ size, className, ...props }, ref) => {
     return (<UITooltip.Text ref={ref} className={tooltipTextStyle({ size, class: className })} {...props}/>);
 });

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
+import { View } from 'react-native';
 declare const VStack: React.ForwardRefExoticComponent<import("react-native").ViewProps & VariantProps<import("@gluestack-ui/nativewind-utils/types").TVReturnType<{
     space: {
         xs: string;
@@ -144,5 +145,5 @@ declare const VStack: React.ForwardRefExoticComponent<import("react-native").Vie
     reversed: {
         true: string;
     };
-}>, unknown, unknown, undefined>>> & React.RefAttributes<unknown>>;
+}>, unknown, unknown, undefined>>> & React.RefAttributes<View>>;
 export { VStack };

@@ -1,19 +1,19 @@
-import "react";
-import { gridStyle, gridItemStyle } from "./styles";
-const Grid = ({ className, _extra, ...props }) => {
+import React from 'react';
+import { gridStyle, gridItemStyle } from './styles';
+const Grid = React.forwardRef(({ className, _extra, ...props }, ref) => {
     const gridClass = _extra?.className;
-    const finalGridClass = gridClass ?? "";
-    return (<div className={gridStyle({
-            class: className + " " + finalGridClass,
+    const finalGridClass = gridClass ?? '';
+    return (<div ref={ref} className={gridStyle({
+            class: className + ' ' + finalGridClass,
         })} {...props}/>);
-};
-const GridItem = ({ className, _extra, ...props }) => {
+});
+const GridItem = React.forwardRef(({ className, _extra, ...props }, ref) => {
     const gridItemClass = _extra?.className;
-    const finalGridItemClass = gridItemClass ?? "";
-    return (<div className={gridItemStyle({
-            class: className + " " + finalGridItemClass,
+    const finalGridItemClass = gridItemClass ?? '';
+    return (<div ref={ref} className={gridItemStyle({
+            class: className + ' ' + finalGridItemClass,
         })} {...props}/>);
-};
-Grid.displayName = "Grid";
-GridItem.displayName = "GridItem";
+});
+Grid.displayName = 'Grid';
+GridItem.displayName = 'GridItem';
 export { Grid, GridItem };

@@ -110,5 +110,5 @@ declare const progressFilledTrackStyle: import("@gluestack-ui/nativewind-utils/t
 type IProgressProps = VariantProps<typeof progressStyle> & React.ComponentProps<typeof UIProgress>;
 type IProgressFilledTrackProps = VariantProps<typeof progressFilledTrackStyle> & React.ComponentProps<typeof UIProgress.FilledTrack>;
 export declare const Progress: React.ForwardRefExoticComponent<Omit<IProgressProps, "ref"> & React.RefAttributes<unknown>>;
-export declare const ProgressFilledTrack: React.ForwardRefExoticComponent<Omit<IProgressFilledTrackProps, "ref"> & React.RefAttributes<unknown>>;
+export declare const ProgressFilledTrack: React.ForwardRefExoticComponent<Omit<IProgressFilledTrackProps, "ref"> & React.RefAttributes<import("react-native").ViewProps>>;
 export {};

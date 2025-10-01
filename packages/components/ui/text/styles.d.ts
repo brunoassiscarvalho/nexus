@@ -139,7 +139,7 @@ export declare const textStyle: import("@gluestack-ui/nativewind-utils/types").T
             base?: import("tailwind-merge").ClassNameValue;
         };
     };
-}), undefined, "text-typography-700 font-normal font-body " | "text-typography-700 font-normal font-body font-sans tracking-sm my-0 bg-transparent border-0 box-border display-inline list-none margin-0 padding-0 position-relative text-start no-underline whitespace-pre-wrap word-wrap-break-word", import("tailwind-variants/dist/config").TVConfig<{
+}), undefined, "text-typography-700 font-body " | "text-typography-700 font-body font-sans tracking-sm my-0 bg-transparent border-0 box-border display-inline list-none margin-0 padding-0 position-relative text-start no-underline whitespace-pre-wrap word-wrap-break-word", import("tailwind-variants/dist/config").TVConfig<{
     isTruncated: {
         true: string;
     };
@@ -279,7 +279,7 @@ export declare const textStyle: import("@gluestack-ui/nativewind-utils/types").T
     highlight: {
         true: string;
     };
-}, undefined, "text-typography-700 font-normal font-body " | "text-typography-700 font-normal font-body font-sans tracking-sm my-0 bg-transparent border-0 box-border display-inline list-none margin-0 padding-0 position-relative text-start no-underline whitespace-pre-wrap word-wrap-break-word", import("tailwind-variants/dist/config").TVConfig<{
+}, undefined, "text-typography-700 font-body " | "text-typography-700 font-body font-sans tracking-sm my-0 bg-transparent border-0 box-border display-inline list-none margin-0 padding-0 position-relative text-start no-underline whitespace-pre-wrap word-wrap-break-word", import("tailwind-variants/dist/config").TVConfig<{
     isTruncated: {
         true: string;
     };
