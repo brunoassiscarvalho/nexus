@@ -1,6 +1,5 @@
 import { Trophy, Award, Target } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@nexus/ui/card";
-import { Progress } from "@nexus/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle, Progress } from "@nexus/ui";
 
 interface SkillProgressProps {
   totalSkillPoints: number;

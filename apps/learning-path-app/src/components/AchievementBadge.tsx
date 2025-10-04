@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Trophy, Award, Star, Crown } from "lucide-react";
-import { cn } from "@nexus/ui/utils";
+import { cn } from "@nexus/ui";
 
 interface AchievementBadgeProps {
   title: string;

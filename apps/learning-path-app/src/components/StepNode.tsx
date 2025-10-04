@@ -1,5 +1,5 @@
 import { Circle, Lock, Check, Star } from "lucide-react";
-import { cn } from "@nexus/ui/utils";
+import { cn } from "@nexus/ui";
 
 interface StepNodeProps {
   stepNumber: number;

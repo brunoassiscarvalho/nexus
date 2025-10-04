@@ -1,5 +1,5 @@
 import { Lock, Check, Star, Zap } from "lucide-react";
-import { cn } from "@nexus/ui/utils";
+import { cn } from "@nexus/ui";
 import { LearningStep } from "../types/learning";
 import { categoryColors } from "../data/learningSteps";
 

@@ -1,5 +1,5 @@
 import { LearningStep } from "../types/learning";
-import { Button } from "@nexus/ui/button";
+import { Button } from "@nexus/ui";
 import { ArrowLeft, CheckCircle, Star } from "lucide-react";
 import { categoryColors } from "../data/learningSteps";
 import { motion } from "motion/react";

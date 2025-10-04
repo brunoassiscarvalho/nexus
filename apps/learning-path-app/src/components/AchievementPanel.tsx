@@ -1,7 +1,7 @@
 import { AchievementBadge } from "./AchievementBadge";
 import { LearningStep, UserProgress, SkillCategory } from "../types/learning";
 import { categoryColors } from "../data/learningSteps";
-import { ScrollArea } from "@nexus/ui/scroll-area";
+import { ScrollArea } from "@nexus/ui";
 import { Trophy } from "lucide-react";
 
 interface AchievementPanelProps {
@@ -61,7 +61,7 @@ export function AchievementPanel({ steps, progress }: AchievementPanelProps) {
 
       achievements.push({
         id: achievementId,
-        title: categoryNames[category as keyof typeof categoryNames],
+        title: categoryNames[category],
         description: `Mastered all ${categorySteps.length} ${category} skills`,
         icon: "award" as const,
         color: categoryColors[category].primary,

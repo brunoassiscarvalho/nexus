@@ -14,18 +14,18 @@ export function SkillTree({ steps, progress, onStepClick }: SkillTreeProps) {
     const tierSpacing = 180; // Vertical spacing between tiers
     const baseY = 100;
     const y = baseY + (step.tier - 1) * tierSpacing;
-
+    
     // Category-based horizontal positioning to prevent crossing
     const categoryPositions: Record<SkillCategory, number> = {
       foundation: 500, // Center
-      reading: 200, // Far left
-      speaking: 400, // Center-left
-      writing: 600, // Center-right
-      listening: 800, // Far right
+      reading: 200,    // Far left
+      speaking: 400,   // Center-left
+      writing: 600,    // Center-right
+      listening: 800   // Far right
     };
-
+    
     let x = categoryPositions[step.category];
-
+    
     // Handle branching paths in listening category
     // Step 9 (Cultural Context) goes slightly left, Step 15 (Accent Recognition) goes slightly right
     if (step.id === 9) {
@@ -33,14 +33,14 @@ export function SkillTree({ steps, progress, onStepClick }: SkillTreeProps) {
     } else if (step.id === 15) {
       x = x + 60; // Shift right
     }
-
+    
     return { x, y };
   };
 
   // Check if a step is unlocked (all prerequisites completed)
   const isStepUnlocked = (step: LearningStep) => {
     if (step.prerequisites.length === 0) return true;
-    return step.prerequisites.every((prereqId) =>
+    return step.prerequisites.every(prereqId => 
       progress.completedSteps.includes(prereqId)
     );
   };
@@ -48,24 +48,24 @@ export function SkillTree({ steps, progress, onStepClick }: SkillTreeProps) {
   // Generate SVG lines connecting prerequisites to steps
   const renderConnections = () => {
     const connections: JSX.Element[] = [];
-
-    steps.forEach((step) => {
+    
+    steps.forEach(step => {
       const stepPos = getNodePosition(step);
       const isUnlocked = isStepUnlocked(step);
       const isCompleted = progress.completedSteps.includes(step.id);
-
-      step.prerequisites.forEach((prereqId) => {
-        const prereq = steps.find((s) => s.id === prereqId);
+      
+      step.prerequisites.forEach(prereqId => {
+        const prereq = steps.find(s => s.id === prereqId);
         if (!prereq) return;
-
+        
         const prereqPos = getNodePosition(prereq);
         const prereqCompleted = progress.completedSteps.includes(prereqId);
-
+        
         // Determine line color based on state and category
         let strokeColor = "#E5E7EB"; // gray for locked
         let strokeWidth = 3;
         let opacity = 0.3;
-
+        
         if (prereqCompleted && isCompleted) {
           strokeColor = categoryColors[step.category].primary;
           strokeWidth = 4;
@@ -79,11 +79,11 @@ export function SkillTree({ steps, progress, onStepClick }: SkillTreeProps) {
           strokeWidth = 3;
           opacity = 0.4;
         }
-
+        
         // Use quadratic curve for smoother connections
         const midX = (prereqPos.x + stepPos.x) / 2;
         const midY = (prereqPos.y + stepPos.y) / 2;
-
+        
         connections.push(
           <path
             key={`${prereqId}-${step.id}`}
@@ -98,46 +98,43 @@ export function SkillTree({ steps, progress, onStepClick }: SkillTreeProps) {
         );
       });
     });
-
+    
     return connections;
   };
 
   // Render category labels
   const renderCategoryLabels = () => {
-    const categories: SkillCategory[] = [
-      "reading",
-      "speaking",
-      "writing",
-      "listening",
-    ];
-
-    return categories.map((category) => {
-      const categorySteps = steps.filter((s) => s.category === category);
+    const categories: SkillCategory[] = ["reading", "speaking", "writing", "listening"];
+    
+    return categories.map(category => {
+      const categorySteps = steps.filter(s => s.category === category);
       if (categorySteps.length === 0) return null;
-
+      
       const colors = categoryColors[category];
       const firstStep = categorySteps[0];
       const pos = getNodePosition(firstStep);
-
+      
       const categoryNames = {
         reading: "📖 Reading Path",
         speaking: "🗣️ Speaking Path",
         writing: "✍️ Writing Path",
-        listening: "👂 Listening Path",
+        listening: "👂 Listening Path"
       };
-
+      
       return (
         <div
           key={category}
           className="absolute top-4 px-4 py-2 rounded-full border-2 shadow-lg backdrop-blur-sm"
-          style={{
+          style={{ 
             left: `${pos.x - 60}px`,
             backgroundColor: colors.secondary,
             borderColor: colors.border,
-            color: colors.text,
+            color: colors.text
           }}
         >
-          <span className="text-sm">{categoryNames[category]}</span>
+          <span className="text-sm">
+            {categoryNames[category]}
+          </span>
         </div>
       );
     });
@@ -150,10 +147,10 @@ export function SkillTree({ steps, progress, onStepClick }: SkillTreeProps) {
         <defs>
           {/* Glow filter for active connections */}
           <filter id="glow">
-            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
             <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
             </feMerge>
           </filter>
         </defs>
@@ -164,7 +161,7 @@ export function SkillTree({ steps, progress, onStepClick }: SkillTreeProps) {
       {renderCategoryLabels()}
 
       {/* Skill nodes */}
-      {steps.map((step) => {
+      {steps.map(step => {
         const isCompleted = progress.completedSteps.includes(step.id);
         const isUnlocked = isStepUnlocked(step);
         const isCurrent = !isCompleted && isUnlocked;

@@ -4,8 +4,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@nexus/ui/dialog";
-import { Button } from "@nexus/ui/button";
+  Button,
+} from "@nexus/ui";
 import { LearningStep } from "../types/learning";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Trophy } from "lucide-react";
