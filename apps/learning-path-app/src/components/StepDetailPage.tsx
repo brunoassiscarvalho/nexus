@@ -1,5 +1,5 @@
 import { LearningStep } from "../types/learning";
-import { Button } from "./ui/button";
+import { Button } from "@nexus/ui/button";
 import { ArrowLeft, CheckCircle, Star } from "lucide-react";
 import { categoryColors } from "../data/learningSteps";
 import { motion } from "motion/react";
@@ -11,18 +11,19 @@ interface StepDetailPageProps {
   onBack: () => void;
 }
 
-export function StepDetailPage({ step, isCompleted, onComplete, onBack }: StepDetailPageProps) {
+export function StepDetailPage({
+  step,
+  isCompleted,
+  onComplete,
+  onBack,
+}: StepDetailPageProps) {
   const colors = categoryColors[step.category];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
       <div className="container mx-auto px-4 py-8">
         {/* Back button */}
-        <Button
-          variant="outline"
-          onClick={onBack}
-          className="mb-6"
-        >
+        <Button variant="outline" onClick={onBack} className="mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Skill Tree
         </Button>
@@ -63,13 +64,14 @@ export function StepDetailPage({ step, isCompleted, onComplete, onBack }: StepDe
                       color: colors.text,
                     }}
                   >
-                    {step.category.charAt(0).toUpperCase() + step.category.slice(1)}
+                    {step.category.charAt(0).toUpperCase() +
+                      step.category.slice(1)}
                   </div>
                 </div>
                 <h1 style={{ color: colors.text }}>{step.title}</h1>
                 <p className="text-muted-foreground mt-2">{step.description}</p>
               </div>
-              
+
               <div className="flex flex-col items-end gap-2">
                 <div
                   className="w-16 h-16 rounded-full border-4 flex items-center justify-center shadow-lg"
@@ -115,7 +117,9 @@ export function StepDetailPage({ step, isCompleted, onComplete, onBack }: StepDe
           {/* Content */}
           <div className="bg-white rounded-lg border shadow-lg p-8 mb-6">
             <h2 className="mb-4">Lesson Content</h2>
-            <p className="text-muted-foreground leading-relaxed">{step.content}</p>
+            <p className="text-muted-foreground leading-relaxed">
+              {step.content}
+            </p>
           </div>
 
           {/* Action button */}

@@ -1,5 +1,5 @@
-import { ZoomIn, ZoomOut, Maximize2, Download, Upload } from 'lucide-react';
-import { Button } from './ui/button';
+import { ZoomIn, ZoomOut, Maximize2, Download, Upload } from "lucide-react";
+import { Button } from "@nexus/ui/button";
 
 interface CanvasControlsProps {
   zoom: number;
@@ -46,10 +46,12 @@ export function CanvasControls({
           <Maximize2 className="w-4 h-4" />
         </Button>
         <div className="px-2 py-1 text-center border-t border-border mt-1">
-          <span className="text-muted-foreground">{Math.round(zoom * 100)}%</span>
+          <span className="text-muted-foreground">
+            {Math.round(zoom * 100)}%
+          </span>
         </div>
       </div>
-      
+
       <div className="bg-card border border-border rounded-lg shadow-lg p-2 flex flex-col gap-1">
         <Button
           variant="ghost"
