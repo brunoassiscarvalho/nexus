@@ -1,9 +1,15 @@
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { CardType } from './CardSidebar';
-import { Circle, Square, Diamond, Hexagon, Zap } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@nexus/ui/sheet";
+import { Label } from "@nexus/ui/label";
+import { Input } from "@nexus/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@nexus/ui/select";
+import { CardType } from "./CardSidebar";
+import { Circle, Square, Diamond, Hexagon, Zap } from "lucide-react";
 
 interface Card {
   id: string;
@@ -17,18 +23,48 @@ interface NodePropertiesDrawerProps {
   selectedCard: Card | null;
   open: boolean;
   onClose: () => void;
-  onUpdateCard: (id: string, updates: Partial<Card>) => void;
+  onUpdateCard: (id: string, updates: Partial) => void;
 }
 
-const cardTypeOptions: Array<{ value: CardType; label: string; icon: React.ReactNode; color: string }> = [
-  { value: 'start', label: 'Start/End', icon: <Circle className="w-4 h-4" />, color: 'bg-green-500' },
-  { value: 'process', label: 'Process', icon: <Square className="w-4 h-4" />, color: 'bg-blue-500' },
-  { value: 'decision', label: 'Decision', icon: <Diamond className="w-4 h-4" />, color: 'bg-yellow-500' },
-  { value: 'input', label: 'Input/Output', icon: <Hexagon className="w-4 h-4" />, color: 'bg-purple-500' },
-  { value: 'action', label: 'Action', icon: <Zap className="w-4 h-4" />, color: 'bg-orange-500' },
+const cardTypeOptions: Array = [
+  {
+    value: "start",
+    label: "Start/End",
+    icon: <Circle className="w-4 h-4" />,
+    color: "bg-green-500",
+  },
+  {
+    value: "process",
+    label: "Process",
+    icon: <Square className="w-4 h-4" />,
+    color: "bg-blue-500",
+  },
+  {
+    value: "decision",
+    label: "Decision",
+    icon: <Diamond className="w-4 h-4" />,
+    color: "bg-yellow-500",
+  },
+  {
+    value: "input",
+    label: "Input/Output",
+    icon: <Hexagon className="w-4 h-4" />,
+    color: "bg-purple-500",
+  },
+  {
+    value: "action",
+    label: "Action",
+    icon: <Zap className="w-4 h-4" />,
+    color: "bg-orange-500",
+  },
 ];
 
-export function NodePropertiesDrawer({ selectedCard, open, onClose, onUpdateCard }: NodePropertiesDrawerProps) {
+export function NodePropertiesDrawer({
+  selectedCard,
+  open,
+  onClose,
+  onUpdateCard,
+}: NodePropertiesDrawerProps) {
   if (!selectedCard) return null;
 
   const handleLabelChange = (value: string) => {
@@ -39,7 +75,9 @@ export function NodePropertiesDrawer({ selectedCard, open, onClose, onUpdateCard
     onUpdateCard(selectedCard.id, { type: value });
   };
 
-  const currentTypeOption = cardTypeOptions.find(opt => opt.value === selectedCard.type);
+  const currentTypeOption = cardTypeOptions.find(
+    (opt) => opt.value === selectedCard.type
+  );
 
   return (
     <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -47,7 +85,7 @@ export function NodePropertiesDrawer({ selectedCard, open, onClose, onUpdateCard
         <SheetHeader>
           <SheetTitle>Node Properties</SheetTitle>
         </SheetHeader>
-        
+
         <div className="mt-6 space-y-6">
           {/* Node Name */}
           <div className="space-y-2">
@@ -68,7 +106,9 @@ export function NodePropertiesDrawer({ selectedCard, open, onClose, onUpdateCard
                 <SelectValue>
                   {currentTypeOption && (
                     <div className="flex items-center gap-2">
-                      <div className={`${currentTypeOption.color} p-1 rounded text-white`}>
+                      <div
+                        className={`${currentTypeOption.color} p-1 rounded text-white`}
+                      >
                         {currentTypeOption.icon}
                       </div>
                       <span>{currentTypeOption.label}</span>
@@ -103,7 +143,10 @@ export function NodePropertiesDrawer({ selectedCard, open, onClose, onUpdateCard
             </div>
             <div className="flex justify-between text-muted-foreground">
               <span>Node ID:</span>
-              <span className="truncate ml-2 max-w-[200px]" title={selectedCard.id}>
+              <span
+                className="truncate ml-2 max-w-[200px]"
+                title={selectedCard.id}
+              >
                 {selectedCard.id}
               </span>
             </div>

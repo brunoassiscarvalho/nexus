@@ -1,5 +1,11 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
-import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@nexus/ui/dialog";
+import { Button } from "@nexus/ui/button";
 import { LearningStep } from "../types/learning";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Trophy } from "lucide-react";
@@ -28,7 +34,7 @@ export function StepContent({
           <DialogTitle>{step.title}</DialogTitle>
           <DialogDescription>{step.description}</DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div className="relative w-full h-64 rounded-lg overflow-hidden">
             <ImageWithFallback
@@ -37,11 +43,11 @@ export function StepContent({
               className="w-full h-full object-cover"
             />
           </div>
-          
+
           <div className="p-4 bg-muted rounded-lg">
             <p>{step.content}</p>
           </div>
-          
+
           <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border-2 border-yellow-200">
             <div className="flex items-center gap-2">
               <Trophy className="w-5 h-5 text-yellow-600" />
@@ -53,7 +59,7 @@ export function StepContent({
               </span>
             )}
           </div>
-          
+
           <div className="flex gap-2">
             {!isCompleted && (
               <Button onClick={onComplete} className="flex-1">

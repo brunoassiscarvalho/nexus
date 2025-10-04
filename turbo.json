@@ -16,6 +16,10 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "test": {
+      "cache": false, // Watch mode tasks are typically not cached
+      "persistent": true // Keep the process running for watch mode
     }
   }
 }

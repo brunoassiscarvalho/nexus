@@ -6,7 +6,7 @@ import { AchievementPanel } from "./components/AchievementPanel";
 import { CompletionParticles } from "./components/CompletionParticles";
 import { learningSteps, categoryColors } from "./data/learningSteps";
 import { UserProgress } from "./types/learning";
-import { ScrollArea } from "./components/ui/scroll-area";
+import { ScrollArea } from "@nexus/ui";
 import { Sparkles } from "lucide-react";
 
 type View = "tree" | "step";
@@ -21,17 +21,22 @@ export default function App() {
 
   const [currentView, setCurrentView] = useState<View>("tree");
   const [selectedStepId, setSelectedStepId] = useState<number | null>(null);
-  const [showParticles, setShowParticles] = useState<{ position: { x: number; y: number }; color: string } | null>(null);
+  const [showParticles, setShowParticles] = useState<{
+    position: { x: number; y: number };
+    color: string;
+  } | null>(null);
 
-  const selectedStep = learningSteps.find((step) => step.id === selectedStepId) || null;
+  const selectedStep =
+    learningSteps.find((step) => step.id === selectedStepId) || null;
 
   const handleStepClick = (stepId: number) => {
     const step = learningSteps.find((s) => s.id === stepId);
     if (!step) return;
 
     // Check if all prerequisites are completed
-    const isUnlocked = step.prerequisites.length === 0 ||
-      step.prerequisites.every(prereqId => 
+    const isUnlocked =
+      step.prerequisites.length === 0 ||
+      step.prerequisites.every((prereqId) =>
         progress.completedSteps.includes(prereqId)
       );
 
@@ -46,49 +51,60 @@ export default function App() {
   const handleCompleteStep = () => {
     if (!selectedStep) return;
 
-    const isAlreadyCompleted = progress.completedSteps.includes(selectedStep.id);
-    
+    const isAlreadyCompleted = progress.completedSteps.includes(
+      selectedStep.id
+    );
+
     if (!isAlreadyCompleted) {
       const newCompletedSteps = [...progress.completedSteps, selectedStep.id];
-      const newTotalPoints = progress.totalSkillPoints + selectedStep.skillPoints;
-      
+      const newTotalPoints =
+        progress.totalSkillPoints + selectedStep.skillPoints;
+
       // Check for new achievements
       const newAchievements = [...progress.achievements];
-      
+
       // Check tier completion
-      const tierSteps = learningSteps.filter(s => s.tier === selectedStep.tier);
-      const completedInTier = tierSteps.filter(s => newCompletedSteps.includes(s.id));
+      const tierSteps = learningSteps.filter(
+        (s) => s.tier === selectedStep.tier
+      );
+      const completedInTier = tierSteps.filter((s) =>
+        newCompletedSteps.includes(s.id)
+      );
       if (completedInTier.length === tierSteps.length) {
         const achievementId = `tier-${selectedStep.tier}`;
         if (!newAchievements.includes(achievementId)) {
           newAchievements.push(achievementId);
         }
       }
-      
+
       // Check category completion
-      const categorySteps = learningSteps.filter(s => s.category === selectedStep.category);
-      const completedInCategory = categorySteps.filter(s => newCompletedSteps.includes(s.id));
+      const categorySteps = learningSteps.filter(
+        (s) => s.category === selectedStep.category
+      );
+      const completedInCategory = categorySteps.filter((s) =>
+        newCompletedSteps.includes(s.id)
+      );
       if (completedInCategory.length === categorySteps.length) {
         const achievementId = `category-${selectedStep.category}`;
         if (!newAchievements.includes(achievementId)) {
           newAchievements.push(achievementId);
         }
       }
-      
+
       // Check mastery
       if (newCompletedSteps.length === learningSteps.length) {
         if (!newAchievements.includes("mastery")) {
           newAchievements.push("mastery");
         }
       }
-      
+
       setProgress({
         currentStep: selectedStep.id,
         completedSteps: newCompletedSteps,
         totalSkillPoints: newTotalPoints,
         achievements: newAchievements,
       });
-      
+
       // Trigger particle effect - will show when returning to tree view
       setShowParticles({
         position: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
@@ -158,7 +174,7 @@ export default function App() {
             />
           </ScrollArea>
         </div>
-        
+
         {/* Particle effects */}
         {showParticles && (
           <CompletionParticles

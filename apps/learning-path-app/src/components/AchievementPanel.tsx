@@ -1,7 +1,7 @@
 import { AchievementBadge } from "./AchievementBadge";
 import { LearningStep, UserProgress, SkillCategory } from "../types/learning";
 import { categoryColors } from "../data/learningSteps";
-import { ScrollArea } from "./ui/scroll-area";
+import { ScrollArea } from "@nexus/ui/scroll-area";
 import { Trophy } from "lucide-react";
 
 interface AchievementPanelProps {

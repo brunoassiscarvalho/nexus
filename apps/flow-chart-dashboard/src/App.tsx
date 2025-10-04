@@ -1,8 +1,8 @@
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { CardSidebar } from './components/CardSidebar';
-import { FlowCanvas } from './components/FlowCanvas';
-import { Toaster } from './components/ui/sonner';
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { CardSidebar } from "./components/CardSidebar";
+import { FlowCanvas } from "./components/FlowCanvas";
+import { Toaster } from "@nexus/ui";
 
 export default function App() {
   return (
