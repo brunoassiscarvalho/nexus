@@ -1,17 +1,15 @@
 import { useState, useEffect } from "react";
 import { LearningStep, SkillCategory } from "../types/learning";
+import { Button } from "@nexus/ui";
+import { Input } from "@nexus/ui";
+import { Textarea } from "@nexus/ui";
+import { Label } from "@nexus/ui";
 import {
-  Button,
-  Input,
-  Textarea,
-  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  ScrollArea,
-  Separator,
 } from "@nexus/ui";
 import {
   X,
@@ -22,6 +20,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { categoryColors } from "../data/learningSteps";
+import { ScrollArea } from "@nexus/ui";
+import { Separator } from "@nexus/ui";
 
 interface NodeEditorProps {
   node: LearningStep;
@@ -55,6 +55,14 @@ export function NodeEditor({
     children.length === 0;
 
   const isMiddle = !isRoot && !isLeaf && !isMasteryChallenge;
+
+  // Check if this leaf connects to Mastery Challenge
+  const masteryNode = allNodes.find(
+    (n) => n.tier === currentMaxTier && n.prerequisites.length > 1
+  );
+  const isConnectedToMastery =
+    masteryNode?.prerequisites.includes(editedNode.id) || false;
+  const shouldConnectToMastery = isLeaf && !isRoot && !isMasteryChallenge;
 
   useEffect(() => {
     setEditedNode(node);
@@ -148,9 +156,27 @@ export function NodeEditor({
             </div>
           )}
           {isLeaf && !isRoot && !isMasteryChallenge && (
-            <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1.5 rounded-full text-xs border border-green-300">
-              <AlertTriangle className="w-3 h-3" />
-              <span>Leaf Node (Cannot be deleted)</span>
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1.5 rounded-full text-xs border border-green-300">
+                <AlertTriangle className="w-3 h-3" />
+                <span>Leaf Node (Cannot be deleted)</span>
+              </div>
+              {shouldConnectToMastery && (
+                <div
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border ml-2 ${
+                    isConnectedToMastery
+                      ? "bg-purple-50 text-purple-700 border-purple-300"
+                      : "bg-red-50 text-red-700 border-red-300"
+                  }`}
+                >
+                  <Star className="w-3 h-3" />
+                  <span>
+                    {isConnectedToMastery
+                      ? "✓ Connected to Mastery Challenge"
+                      : "⚠ Not connected to Mastery Challenge"}
+                  </span>
+                </div>
+              )}
             </div>
           )}
           {isMiddle && (
@@ -164,8 +190,8 @@ export function NodeEditor({
       </div>
 
       {/* Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-6 space-y-6">
+      <ScrollArea className="flex-1 overflow-auto">
+        <div className="p-6 space-y-6 pb-12">
           {/* Basic Info Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

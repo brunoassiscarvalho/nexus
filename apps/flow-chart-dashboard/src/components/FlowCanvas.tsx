@@ -5,7 +5,7 @@ import { CardType } from './CardSidebar';
 import { CanvasControls } from './CanvasControls';
 import { CardContextMenu } from './CardContextMenu';
 import { NodePropertiesDrawer } from './NodePropertiesDrawer';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface Card {
   id: string;

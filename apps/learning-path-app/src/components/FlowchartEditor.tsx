@@ -1,8 +1,9 @@
 import { useRef, useMemo } from "react";
 import { LearningStep } from "../types/learning";
-import { ScrollArea, cn } from "@nexus/ui";
+import { ScrollArea } from "@nexus/ui";
 import { categoryColors } from "../data/learningSteps";
 import { Plus, Star } from "lucide-react";
+import { cn } from "@nexus/ui";
 
 interface FlowchartEditorProps {
   steps: LearningStep[];
@@ -24,7 +25,7 @@ export function FlowchartEditor({
     const positions = new Map<number, { x: number; y: number }>();
 
     const HORIZONTAL_SPACING = 300;
-    const VERTICAL_SPACING = 220;
+    const VERTICAL_SPACING = 240; // Increased for better connection routing
 
     // Get children of a node
     const getChildren = (nodeId: number): LearningStep[] => {
@@ -87,7 +88,10 @@ export function FlowchartEditor({
 
       if (children.length === 0) {
         // Leaf node
-        positions.set(nodeId, { x: leftBound + HORIZONTAL_SPACING / 2, y });
+        positions.set(nodeId, {
+          x: leftBound + HORIZONTAL_SPACING / 2,
+          y,
+        });
         return leftBound + HORIZONTAL_SPACING;
       }
 
@@ -111,7 +115,10 @@ export function FlowchartEditor({
         const centerX = (minX + maxX) / 2;
         positions.set(nodeId, { x: centerX, y });
       } else {
-        positions.set(nodeId, { x: leftBound + HORIZONTAL_SPACING / 2, y });
+        positions.set(nodeId, {
+          x: leftBound + HORIZONTAL_SPACING / 2,
+          y,
+        });
       }
 
       return currentX;
@@ -132,7 +139,10 @@ export function FlowchartEditor({
       if (step.prerequisites.length > 1) {
         const parentPositions = step.prerequisites
           .map((pid) => positions.get(pid))
-          .filter((p) => p !== undefined) as { x: number; y: number }[];
+          .filter((p) => p !== undefined) as {
+          x: number;
+          y: number;
+        }[];
 
         if (parentPositions.length > 0) {
           const avgX =
@@ -171,12 +181,7 @@ export function FlowchartEditor({
 
         const midY = (startY + endY) / 2;
 
-        const path = `
-          M ${startX} ${startY}
-          L ${startX} ${midY}
-          L ${endX} ${midY}
-          L ${endX} ${endY}
-        `;
+        const path = `M ${startX} ${startY} L ${startX} ${midY} L ${endX} ${midY} L ${endX} ${endY}`;
 
         connections.push(
           <path
@@ -300,7 +305,10 @@ export function FlowchartEditor({
           {/* ID badge */}
           <div
             className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-white border-2 flex items-center justify-center text-xs shadow-md"
-            style={{ borderColor: colors.border, color: colors.text }}
+            style={{
+              borderColor: colors.border,
+              color: colors.text,
+            }}
           >
             {step.id}
           </div>

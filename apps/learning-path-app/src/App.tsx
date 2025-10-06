@@ -6,14 +6,11 @@ import { AchievementPanel } from "./components/AchievementPanel";
 import { CompletionParticles } from "./components/CompletionParticles";
 import { SideMenu } from "./components/SideMenu";
 import { AdminPage } from "./components/AdminPage";
-import {
-  learningSteps as initialSteps,
-  categoryColors,
-} from "./data/learningSteps";
+import { learningSteps as initialSteps, categoryColors } from "./data/learningSteps";
 import { LearningStep, UserProgress } from "./types/learning";
-import { ScrollArea } from "@nexus/ui";
+import { ScrollArea } from "./components/ui/scroll-area";
 import { Sparkles } from "lucide-react";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 type View = "tree" | "step";
 type Mode = "user" | "admin";
@@ -21,9 +18,8 @@ type Mode = "user" | "admin";
 export default function App() {
   const [mode, setMode] = useState<Mode>("user");
   const [menuCollapsed, setMenuCollapsed] = useState(false);
-  const [learningSteps, setLearningSteps] =
-    useState<LearningStep[]>(initialSteps);
-
+  const [learningSteps, setLearningSteps] = useState<LearningStep[]>(initialSteps);
+  
   const [progress, setProgress] = useState<UserProgress>({
     currentStep: 1,
     completedSteps: [],
@@ -33,13 +29,9 @@ export default function App() {
 
   const [currentView, setCurrentView] = useState<View>("tree");
   const [selectedStepId, setSelectedStepId] = useState<number | null>(null);
-  const [showParticles, setShowParticles] = useState<{
-    position: { x: number; y: number };
-    color: string;
-  } | null>(null);
+  const [showParticles, setShowParticles] = useState<{ position: { x: number; y: number }; color: string } | null>(null);
 
-  const selectedStep =
-    learningSteps.find((step) => step.id === selectedStepId) || null;
+  const selectedStep = learningSteps.find((step) => step.id === selectedStepId) || null;
 
   const handleModeChange = (newMode: Mode) => {
     setMode(newMode);
@@ -59,9 +51,8 @@ export default function App() {
     if (!step) return;
 
     // Check if all prerequisites are completed
-    const isUnlocked =
-      step.prerequisites.length === 0 ||
-      step.prerequisites.every((prereqId) =>
+    const isUnlocked = step.prerequisites.length === 0 ||
+      step.prerequisites.every(prereqId => 
         progress.completedSteps.includes(prereqId)
       );
 
@@ -75,60 +66,49 @@ export default function App() {
   const handleCompleteStep = () => {
     if (!selectedStep) return;
 
-    const isAlreadyCompleted = progress.completedSteps.includes(
-      selectedStep.id
-    );
-
+    const isAlreadyCompleted = progress.completedSteps.includes(selectedStep.id);
+    
     if (!isAlreadyCompleted) {
       const newCompletedSteps = [...progress.completedSteps, selectedStep.id];
-      const newTotalPoints =
-        progress.totalSkillPoints + selectedStep.skillPoints;
-
+      const newTotalPoints = progress.totalSkillPoints + selectedStep.skillPoints;
+      
       // Check for new achievements
       const newAchievements = [...progress.achievements];
-
+      
       // Check tier completion
-      const tierSteps = learningSteps.filter(
-        (s) => s.tier === selectedStep.tier
-      );
-      const completedInTier = tierSteps.filter((s) =>
-        newCompletedSteps.includes(s.id)
-      );
+      const tierSteps = learningSteps.filter(s => s.tier === selectedStep.tier);
+      const completedInTier = tierSteps.filter(s => newCompletedSteps.includes(s.id));
       if (completedInTier.length === tierSteps.length) {
         const achievementId = `tier-${selectedStep.tier}`;
         if (!newAchievements.includes(achievementId)) {
           newAchievements.push(achievementId);
         }
       }
-
+      
       // Check category completion
-      const categorySteps = learningSteps.filter(
-        (s) => s.category === selectedStep.category
-      );
-      const completedInCategory = categorySteps.filter((s) =>
-        newCompletedSteps.includes(s.id)
-      );
+      const categorySteps = learningSteps.filter(s => s.category === selectedStep.category);
+      const completedInCategory = categorySteps.filter(s => newCompletedSteps.includes(s.id));
       if (completedInCategory.length === categorySteps.length) {
         const achievementId = `category-${selectedStep.category}`;
         if (!newAchievements.includes(achievementId)) {
           newAchievements.push(achievementId);
         }
       }
-
+      
       // Check mastery
       if (newCompletedSteps.length === learningSteps.length) {
         if (!newAchievements.includes("mastery")) {
           newAchievements.push("mastery");
         }
       }
-
+      
       setProgress({
         currentStep: selectedStep.id,
         completedSteps: newCompletedSteps,
         totalSkillPoints: newTotalPoints,
         achievements: newAchievements,
       });
-
+      
       // Trigger particle effect
       setShowParticles({
         position: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
@@ -186,7 +166,7 @@ export default function App() {
     );
   }
 
-  // Render skill tree page (user mode)
+  // Render skill tree page (user mode) - Fullscreen Dashboard
   return (
     <>
       <SideMenu
@@ -196,55 +176,54 @@ export default function App() {
         onToggleCollapse={() => setMenuCollapsed(!menuCollapsed)}
       />
       <div
-        className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 transition-all"
+        className="h-screen flex flex-col bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 transition-all overflow-hidden"
         style={{ marginLeft: menuCollapsed ? "64px" : "256px" }}
       >
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Sparkles className="w-8 h-8 text-purple-600" />
+        {/* Header - Fixed at top */}
+        <div className="flex-shrink-0 border-b bg-white/80 backdrop-blur px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-7 h-7 text-purple-600" />
               <h1 className="text-purple-800">Learning Quest</h1>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Complete your learning journey and earn skill points!
             </p>
           </div>
+        </div>
 
-          {/* Progress and Achievements */}
-          <div className="max-w-6xl mx-auto mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+        {/* Main Content Area - Flexible */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Side - Progress Panel */}
+          <div className="w-80 flex-shrink-0 border-r bg-white/60 backdrop-blur p-4 overflow-y-auto">
+            <div className="space-y-4">
               <SkillProgress
                 totalSkillPoints={progress.totalSkillPoints}
                 completedSteps={progress.completedSteps.length}
                 totalSteps={learningSteps.length}
               />
-            </div>
-            <div>
               <AchievementPanel steps={learningSteps} progress={progress} />
             </div>
           </div>
 
-          {/* Skill Tree */}
-          <div className="max-w-6xl mx-auto">
-            <ScrollArea className="h-[800px] rounded-lg border bg-white/50 backdrop-blur p-8">
-              <SkillTree
-                steps={learningSteps}
-                progress={progress}
-                onStepClick={handleStepClick}
-              />
-            </ScrollArea>
-          </div>
-
-          {/* Particle effects */}
-          {showParticles && (
-            <CompletionParticles
-              position={showParticles.position}
-              color={showParticles.color}
-              onComplete={() => setShowParticles(null)}
+          {/* Right Side - Skill Tree (Full scrollable area) */}
+          <div className="flex-1 overflow-auto p-8">
+            <SkillTree
+              steps={learningSteps}
+              progress={progress}
+              onStepClick={handleStepClick}
             />
-          )}
+          </div>
         </div>
+        
+        {/* Particle effects */}
+        {showParticles && (
+          <CompletionParticles
+            position={showParticles.position}
+            color={showParticles.color}
+            onComplete={() => setShowParticles(null)}
+          />
+        )}
       </div>
     </>
   );

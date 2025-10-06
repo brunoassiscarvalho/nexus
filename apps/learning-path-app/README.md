@@ -1,7 +1,7 @@
 
-  # Learning Path App
+  # learning-path-app
 
-  This is a code bundle for Learning Path App. The original project is available at https://www.figma.com/design/7CoucjhhjBh0LwldpqHA3B/Learning-Path-App.
+  This is a code bundle for learning-path-app. The original project is available at https://www.figma.com/design/7CoucjhhjBh0LwldpqHA3B/learning-path-app.
 
   ## Running the code
 

@@ -1,5 +1,5 @@
 import { ZoomIn, ZoomOut, Maximize2, Download, Upload } from "lucide-react";
-import { Button } from "@nexus/ui/button";
+import { Button } from "@nexus/ui";
 
 interface CanvasControlsProps {
   zoom: number;

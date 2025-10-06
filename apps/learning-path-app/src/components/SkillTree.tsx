@@ -1,6 +1,7 @@
 import { SkillTreeNode } from "./SkillTreeNode";
 import { LearningStep, UserProgress, SkillCategory } from "../types/learning";
 import { categoryColors } from "../data/learningSteps";
+import { useMemo } from "react";
 
 interface SkillTreeProps {
   steps: LearningStep[];
@@ -9,32 +10,129 @@ interface SkillTreeProps {
 }
 
 export function SkillTree({ steps, progress, onStepClick }: SkillTreeProps) {
-  // Calculate positions for tree layout - organized by category to prevent crossing
-  const getNodePosition = (step: LearningStep) => {
-    const tierSpacing = 180; // Vertical spacing between tiers
-    const baseY = 100;
-    const y = baseY + (step.tier - 1) * tierSpacing;
-    
-    // Category-based horizontal positioning to prevent crossing
-    const categoryPositions: Record<SkillCategory, number> = {
-      foundation: 500, // Center
-      reading: 200,    // Far left
-      speaking: 400,   // Center-left
-      writing: 600,    // Center-right
-      listening: 800   // Far right
+  // Dynamic tree layout algorithm - organized by category to prevent crossing
+  const nodePositions = useMemo(() => {
+    const positions = new Map<number, { x: number; y: number }>();
+
+    const HORIZONTAL_SPACING = 280;
+    const VERTICAL_SPACING = 220;
+    const CATEGORY_SPACING = 100; // Extra space between category groups
+
+    // Get children of a node
+    const getChildren = (nodeId: number): LearningStep[] => {
+      return steps.filter((s) => s.prerequisites.includes(nodeId));
     };
+
+    // Calculate depth (tier) for each node
+    const getDepth = (nodeId: number, visited = new Set<number>()): number => {
+      if (visited.has(nodeId)) return 0;
+      visited.add(nodeId);
+
+      const node = steps.find((s) => s.id === nodeId);
+      if (!node || node.prerequisites.length === 0) return 0;
+
+      const parentDepths = node.prerequisites.map((pid) =>
+        getDepth(pid, new Set(visited)),
+      );
+      return Math.max(...parentDepths) + 1;
+    };
+
+    // Group nodes by category and depth
+    const categoryGroups = new Map<SkillCategory, LearningStep[]>();
+    steps.forEach((step) => {
+      if (!categoryGroups.has(step.category)) {
+        categoryGroups.set(step.category, []);
+      }
+      categoryGroups.get(step.category)!.push(step);
+    });
+
+    // Sort categories for consistent layout
+    const orderedCategories: SkillCategory[] = ["foundation", "reading", "speaking", "writing", "listening"];
     
-    let x = categoryPositions[step.category];
+    // Calculate subtree width
+    const getSubtreeWidth = (nodeId: number, memo = new Map<number, number>()): number => {
+      if (memo.has(nodeId)) return memo.get(nodeId)!;
+
+      const children = getChildren(nodeId);
+      if (children.length === 0) {
+        memo.set(nodeId, 1);
+        return 1;
+      }
+
+      const childWidths = children.map((c) => getSubtreeWidth(c.id, memo));
+      const width = Math.max(childWidths.reduce((a, b) => a + b, 0), 1);
+      memo.set(nodeId, width);
+      return width;
+    };
+
+    // Position nodes recursively
+    const positionNode = (nodeId: number, depth: number, leftBound: number, rightBound: number) => {
+      const centerX = (leftBound + rightBound) / 2;
+      const y = depth * VERTICAL_SPACING + 120;
+
+      positions.set(nodeId, { x: centerX, y });
+
+      const children = getChildren(nodeId);
+      if (children.length === 0) return;
+
+      // Sort children by category to keep them grouped
+      const sortedChildren = [...children].sort((a, b) => {
+        const aIndex = orderedCategories.indexOf(a.category);
+        const bIndex = orderedCategories.indexOf(b.category);
+        return aIndex - bIndex;
+      });
+
+      const childWidths = sortedChildren.map((c) => getSubtreeWidth(c.id));
+      const totalWidth = childWidths.reduce((a, b) => a + b, 0);
+      const availableWidth = rightBound - leftBound;
+      const spacing = totalWidth > 1 ? availableWidth / totalWidth : 0;
+
+      let currentX = leftBound;
+      sortedChildren.forEach((child, i) => {
+        const childWidth = childWidths[i];
+        const childSpace = spacing * childWidth;
+        positionNode(child.id, depth + 1, currentX, currentX + childSpace);
+        currentX += childSpace;
+      });
+    };
+
+    // Find root nodes and organize by category
+    const rootNodes = steps.filter((s) => s.prerequisites.length === 0);
     
-    // Handle branching paths in listening category
-    // Step 9 (Cultural Context) goes slightly left, Step 15 (Accent Recognition) goes slightly right
-    if (step.id === 9) {
-      x = x - 60; // Shift left
-    } else if (step.id === 15) {
-      x = x + 60; // Shift right
+    if (rootNodes.length === 0 && steps.length > 0) {
+      // Fallback: position all nodes in tier 0
+      steps.forEach((node, i) => {
+        positions.set(node.id, { x: i * HORIZONTAL_SPACING + 200, y: 120 });
+      });
+    } else {
+      // Sort roots by category
+      const sortedRoots = [...rootNodes].sort((a, b) => {
+        const aIndex = orderedCategories.indexOf(a.category);
+        const bIndex = orderedCategories.indexOf(b.category);
+        return aIndex - bIndex;
+      });
+
+      const totalWidth = sortedRoots.reduce(
+        (sum, root) => sum + getSubtreeWidth(root.id),
+        0,
+      );
+      const canvasWidth = totalWidth * HORIZONTAL_SPACING;
+
+      let currentX = 150;
+      sortedRoots.forEach((root) => {
+        const rootWidth = getSubtreeWidth(root.id);
+        const rootSpace = (rootWidth / totalWidth) * canvasWidth;
+        positionNode(root.id, 0, currentX, currentX + rootSpace);
+        currentX += rootSpace;
+      });
     }
-    
-    return { x, y };
+
+    return positions;
+  }, [steps]);
+
+  // Get node position from the calculated positions map
+  const getNodePosition = (step: LearningStep) => {
+    return nodePositions.get(step.id) || { x: 0, y: 0 };
   };
 
   // Check if a step is unlocked (all prerequisites completed)
@@ -45,9 +143,23 @@ export function SkillTree({ steps, progress, onStepClick }: SkillTreeProps) {
     );
   };
 
-  // Generate SVG lines connecting prerequisites to steps
+  // Generate SVG lines connecting prerequisites to steps with smart routing
   const renderConnections = () => {
     const connections: JSX.Element[] = [];
+    
+    // Build connection data with routing information
+    type ConnectionData = {
+      prereqId: number;
+      stepId: number;
+      prereqPos: { x: number; y: number };
+      stepPos: { x: number; y: number };
+      strokeColor: string;
+      strokeWidth: number;
+      opacity: number;
+      horizontalDistance: number;
+    };
+    
+    const connectionData: ConnectionData[] = [];
     
     steps.forEach(step => {
       const stepPos = getNodePosition(step);
@@ -80,53 +192,130 @@ export function SkillTree({ steps, progress, onStepClick }: SkillTreeProps) {
           opacity = 0.4;
         }
         
-        // Use quadratic curve for smoother connections
-        const midX = (prereqPos.x + stepPos.x) / 2;
-        const midY = (prereqPos.y + stepPos.y) / 2;
-        
-        connections.push(
-          <path
-            key={`${prereqId}-${step.id}`}
-            d={`M ${prereqPos.x} ${prereqPos.y} Q ${midX} ${midY} ${stepPos.x} ${stepPos.y}`}
-            stroke={strokeColor}
-            strokeWidth={strokeWidth}
-            opacity={opacity}
-            fill="none"
-            strokeLinecap="round"
-            className="transition-all duration-300"
-          />
-        );
+        connectionData.push({
+          prereqId,
+          stepId: step.id,
+          prereqPos,
+          stepPos,
+          strokeColor,
+          strokeWidth,
+          opacity,
+          horizontalDistance: Math.abs(stepPos.x - prereqPos.x),
+        });
       });
+    });
+    
+    // Group connections by their vertical span and detect potential overlaps
+    const getRoutingOffset = (conn: ConnectionData, index: number): number => {
+      // For connections going to the same child from different parents,
+      // route them at different heights to avoid overlap
+      const siblingConnections = connectionData.filter(
+        c => c.stepId === conn.stepId && c.prereqId !== conn.prereqId
+      );
+      
+      if (siblingConnections.length === 0) return 0;
+      
+      // Find this connection's index among siblings
+      const allToSameChild = connectionData.filter(c => c.stepId === conn.stepId);
+      const myIndex = allToSameChild.findIndex(c => c.prereqId === conn.prereqId);
+      const totalSiblings = allToSameChild.length;
+      
+      // Spread siblings vertically
+      if (totalSiblings === 1) return 0;
+      
+      const spreadRange = 40; // pixels to spread
+      const offset = (myIndex - (totalSiblings - 1) / 2) * spreadRange;
+      
+      return offset;
+    };
+    
+    // Render each connection with smart routing
+    connectionData.forEach((conn, index) => {
+      const startX = conn.prereqPos.x;
+      const startY = conn.prereqPos.y + 85; // Bottom of parent node
+      const endX = conn.stepPos.x;
+      const endY = conn.stepPos.y - 85; // Top of child node
+      
+      // Calculate routing offset to prevent overlaps
+      const routingOffset = getRoutingOffset(conn, index);
+      const midY = (startY + endY) / 2 + routingOffset;
+      
+      // Create orthogonal path with offset
+      const path = `M ${startX} ${startY} L ${startX} ${midY} L ${endX} ${midY} L ${endX} ${endY}`;
+      
+      connections.push(
+        <path
+          key={`line-${conn.prereqId}-${conn.stepId}`}
+          d={path}
+          stroke={conn.strokeColor}
+          strokeWidth={conn.strokeWidth}
+          opacity={conn.opacity}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="transition-all duration-300"
+        />
+      );
+      
+      // Add arrow head
+      connections.push(
+        <polygon
+          key={`arrow-${conn.prereqId}-${conn.stepId}`}
+          points={`${endX},${endY} ${endX - 7},${endY - 12} ${endX + 7},${endY - 12}`}
+          fill={conn.strokeColor}
+          opacity={conn.opacity}
+          className="transition-all duration-300"
+        />
+      );
     });
     
     return connections;
   };
 
-  // Render category labels
+  // Render category labels - positioned at the top of each category's column
   const renderCategoryLabels = () => {
-    const categories: SkillCategory[] = ["reading", "speaking", "writing", "listening"];
+    const categories: SkillCategory[] = ["foundation", "reading", "speaking", "writing", "listening"];
     
     return categories.map(category => {
       const categorySteps = steps.filter(s => s.category === category);
       if (categorySteps.length === 0) return null;
       
       const colors = categoryColors[category];
-      const firstStep = categorySteps[0];
-      const pos = getNodePosition(firstStep);
+      
+      // Find all root nodes (nodes with no prerequisites) in this category
+      const rootNodesInCategory = categorySteps.filter(s => s.prerequisites.length === 0);
+      
+      // If there are root nodes, use the average position of them
+      // Otherwise use the topmost node in the category
+      let labelX: number;
+      
+      if (rootNodesInCategory.length > 0) {
+        const positions = rootNodesInCategory.map(s => getNodePosition(s).x);
+        labelX = positions.reduce((a, b) => a + b, 0) / positions.length;
+      } else {
+        // Find the node with minimum Y position (topmost)
+        const topNode = categorySteps.reduce((top, current) => {
+          const topPos = getNodePosition(top);
+          const currentPos = getNodePosition(current);
+          return currentPos.y < topPos.y ? current : top;
+        });
+        labelX = getNodePosition(topNode).x;
+      }
       
       const categoryNames = {
-        reading: "📖 Reading Path",
-        speaking: "🗣️ Speaking Path",
-        writing: "✍️ Writing Path",
-        listening: "👂 Listening Path"
+        foundation: "⭐ Foundation",
+        reading: "📖 Reading",
+        speaking: "🗣️ Speaking",
+        writing: "✍️ Writing",
+        listening: "👂 Listening"
       };
       
       return (
         <div
           key={category}
-          className="absolute top-4 px-4 py-2 rounded-full border-2 shadow-lg backdrop-blur-sm"
+          className="absolute top-8 px-4 py-2 rounded-full border-2 shadow-lg backdrop-blur-sm transition-all"
           style={{ 
-            left: `${pos.x - 60}px`,
+            left: `${labelX - 60}px`,
             backgroundColor: colors.secondary,
             borderColor: colors.border,
             color: colors.text
@@ -140,10 +329,31 @@ export function SkillTree({ steps, progress, onStepClick }: SkillTreeProps) {
     });
   };
 
+  // Calculate canvas size based on node positions
+  const canvasSize = useMemo(() => {
+    let maxX = 0;
+    let maxY = 0;
+    let minX = Infinity;
+
+    nodePositions.forEach((pos) => {
+      maxX = Math.max(maxX, pos.x);
+      maxY = Math.max(maxY, pos.y);
+      minX = Math.min(minX, pos.x);
+    });
+
+    return {
+      width: Math.max(maxX - minX + 600, 1400),
+      height: Math.max(maxY + 500, 1200),
+    };
+  }, [nodePositions]);
+
   return (
-    <div className="relative w-full h-full min-h-[1000px]">
+    <div className="relative w-full h-full" style={{ minHeight: `${canvasSize.height}px`, minWidth: `${canvasSize.width}px` }}>
       {/* SVG for connection lines */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none">
+      <svg 
+        className="absolute inset-0 pointer-events-none" 
+        style={{ width: `${canvasSize.width}px`, height: `${canvasSize.height}px` }}
+      >
         <defs>
           {/* Glow filter for active connections */}
           <filter id="glow">

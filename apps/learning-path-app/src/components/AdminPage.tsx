@@ -2,9 +2,15 @@ import { useState } from "react";
 import { LearningStep } from "../types/learning";
 import { FlowchartEditor } from "./FlowchartEditor";
 import { NodeEditor } from "./NodeEditor";
-import { Button } from "@nexus/ui";
-import { Plus, Save, Download } from "lucide-react";
-import { toast } from "sonner@2.0.3";
+import {
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@nexus/ui";
+import { Plus, Save, Download, Info } from "lucide-react";
+import { toast } from "sonner";
 
 interface AdminPageProps {
   steps: LearningStep[];
@@ -54,7 +60,10 @@ export function AdminPage({ steps, onSaveSteps }: AdminPageProps) {
     );
 
     let updatedSteps = [...editingSteps];
-    let shouldConnectToMastery = false;
+
+    // Check if parent is currently connected to Mastery (meaning it's currently a leaf)
+    const parentIsLeafToMastery =
+      masteryNode?.prerequisites.includes(parentId) || false;
 
     // If we found a mastery challenge node and the new node would reach its tier
     if (masteryNode && newTier >= masteryNode.tier) {
@@ -65,9 +74,6 @@ export function AdminPage({ steps, onSaveSteps }: AdminPageProps) {
         }
         return step;
       });
-
-      // The new node should connect to mastery
-      shouldConnectToMastery = true;
 
       toast.info(
         "Mastery Challenge moved down to remain the final convergence node"
@@ -92,21 +98,30 @@ export function AdminPage({ steps, onSaveSteps }: AdminPageProps) {
     // Add the new node
     updatedSteps.push(newStep);
 
-    // If this node should connect to mastery, update mastery's prerequisites
-    if (shouldConnectToMastery && masteryNode) {
+    // Update Mastery Challenge prerequisites
+    if (masteryNode) {
       updatedSteps = updatedSteps.map((step) => {
         if (step.id === masteryNode.id) {
-          // Add the new node to mastery's prerequisites if not already there
-          const newPrereqs = [...step.prerequisites];
+          let newPrereqs = [...step.prerequisites];
+
+          // If parent was a leaf connected to mastery, remove it (it's no longer a leaf)
+          if (parentIsLeafToMastery) {
+            newPrereqs = newPrereqs.filter((id) => id !== parentId);
+            toast.info(
+              "Parent removed from Mastery Challenge (no longer a leaf)"
+            );
+          }
+
+          // Add the new node as it's now the leaf in this branch
           if (!newPrereqs.includes(newId)) {
             newPrereqs.push(newId);
+            toast.success("New leaf node connected to Mastery Challenge");
           }
+
           return { ...step, prerequisites: newPrereqs };
         }
         return step;
       });
-
-      toast.success("Child node created and connected to Mastery Challenge");
     } else {
       toast.success("Child node created");
     }
@@ -164,8 +179,12 @@ export function AdminPage({ steps, onSaveSteps }: AdminPageProps) {
     // It's a middle node - reconnect children to this node's parent
     const parentId = node.prerequisites[0]; // Get the first parent
 
+    // Check if this node was connected to Mastery Challenge
+    const nodeWasConnectedToMastery =
+      masteryNode?.prerequisites.includes(nodeId) || false;
+
     // Update all children to point to the deleted node's parent
-    const updatedSteps = editingSteps
+    let updatedSteps = editingSteps
       .filter((s) => s.id !== nodeId) // Remove the node
       .map((s) => {
         // If this step was a child of the deleted node
@@ -179,6 +198,32 @@ export function AdminPage({ steps, onSaveSteps }: AdminPageProps) {
         }
         return s;
       });
+
+    // Update Mastery Challenge if needed
+    if (masteryNode && nodeWasConnectedToMastery) {
+      // Remove the deleted node from mastery's prerequisites
+      // The children are now reconnected to parent, but they shouldn't connect to mastery
+      // Only if parent becomes a leaf (has no other children) should it connect to mastery
+      updatedSteps = updatedSteps.map((step) => {
+        if (step.id === masteryNode.id) {
+          let newPrereqs = step.prerequisites.filter((id) => id !== nodeId);
+
+          // Check if the parent is now a leaf (has no children after this deletion)
+          const parentHasOtherChildren = updatedSteps.some(
+            (s) => s.prerequisites.includes(parentId) && s.id !== masteryNode.id
+          );
+
+          // If parent has no children and is not already in mastery's prereqs, add it
+          if (!parentHasOtherChildren && !newPrereqs.includes(parentId)) {
+            newPrereqs.push(parentId);
+            toast.info("Parent reconnected to Mastery Challenge (now a leaf)");
+          }
+
+          return { ...step, prerequisites: newPrereqs };
+        }
+        return step;
+      });
+    }
 
     setEditingSteps(updatedSteps);
     setSelectedNodeId(null);
@@ -219,6 +264,58 @@ export function AdminPage({ steps, onSaveSteps }: AdminPageProps) {
       return;
     }
 
+    // Validate Mastery Challenge connections
+    const currentMaxTier = Math.max(...editingSteps.map((s) => s.tier));
+    const masteryNode = editingSteps.find(
+      (node) => node.tier === currentMaxTier && node.prerequisites.length > 1
+    );
+
+    if (masteryNode) {
+      // Check that all prerequisites of Mastery are leaf nodes
+      const invalidPrereqs = masteryNode.prerequisites.filter((prereqId) => {
+        const hasChildren = editingSteps.some(
+          (s) => s.prerequisites.includes(prereqId) && s.id !== masteryNode.id
+        );
+        return hasChildren;
+      });
+
+      if (invalidPrereqs.length > 0) {
+        const invalidNodes = invalidPrereqs
+          .map((id) => editingSteps.find((s) => s.id === id)?.title)
+          .join(", ");
+        toast.error(
+          `Mastery Challenge can only connect to leaf nodes. These nodes have children: ${invalidNodes}`
+        );
+        return;
+      }
+
+      // Check that all leaf nodes (except roots) connect to Mastery
+      const leafNodes = editingSteps.filter((node) => {
+        const hasChildren = editingSteps.some((s) =>
+          s.prerequisites.includes(node.id)
+        );
+        return (
+          !hasChildren &&
+          node.prerequisites.length > 0 &&
+          node.id !== masteryNode.id
+        );
+      });
+
+      const disconnectedLeaves = leafNodes.filter(
+        (leaf) => !masteryNode.prerequisites.includes(leaf.id)
+      );
+
+      if (disconnectedLeaves.length > 0) {
+        const disconnectedTitles = disconnectedLeaves
+          .map((n) => n.title)
+          .join(", ");
+        toast.warning(
+          `Warning: These leaf nodes don't connect to Mastery Challenge: ${disconnectedTitles}. All learning paths should converge.`
+        );
+        // Don't block save, just warn
+      }
+    }
+
     onSaveSteps(editingSteps);
     toast.success("Learning path saved successfully!");
   };
@@ -239,12 +336,52 @@ export function AdminPage({ steps, onSaveSteps }: AdminPageProps) {
       {/* Header */}
       <div className="bg-white border-b shadow-sm px-6 py-4 shrink-0 z-20">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-purple-800">Learning Path Editor</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {editingSteps.length} skill{editingSteps.length !== 1 ? "s" : ""}{" "}
-              • Click nodes to edit • Hover and click + to add children
-            </p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-purple-800">Learning Path Editor</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {editingSteps.length} skill
+                {editingSteps.length !== 1 ? "s" : ""} • Click nodes to edit •
+                Hover and click + to add children
+              </p>
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="p-2 hover:bg-purple-100 rounded-lg transition-colors">
+                    <Info className="w-5 h-5 text-purple-600" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-sm p-4">
+                  <div className="space-y-2">
+                    <p className="font-semibold text-sm">
+                      Mastery Challenge Rules:
+                    </p>
+                    <ul className="text-xs space-y-1 list-disc list-inside">
+                      <li>
+                        All learning paths must converge to a single final node
+                      </li>
+                      <li>
+                        Only leaf nodes (nodes with no children) can connect to
+                        Mastery Challenge
+                      </li>
+                      <li>
+                        When you add a child to a leaf, it automatically
+                        disconnects from Mastery
+                      </li>
+                      <li>
+                        The new child becomes the leaf and connects to Mastery
+                        instead
+                      </li>
+                      <li>
+                        This ensures no shortcuts - students must complete full
+                        branches
+                      </li>
+                    </ul>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleExport} variant="outline" size="sm">
