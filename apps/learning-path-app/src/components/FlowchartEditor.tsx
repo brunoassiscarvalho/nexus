@@ -1,6 +1,5 @@
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState, useEffect } from "react";
 import { LearningStep } from "../types/learning";
-import { ScrollArea } from "@nexus/ui";
 import { categoryColors } from "../data/learningSteps";
 import { Plus, Star } from "lucide-react";
 import { cn } from "@nexus/ui";
@@ -10,6 +9,7 @@ interface FlowchartEditorProps {
   selectedNodeId: number | null;
   onNodeSelect: (nodeId: number) => void;
   onAddChildNode: (parentId: number) => void;
+  onAddNodeAtTier?: (tier: number, category?: string) => void;
 }
 
 export function FlowchartEditor({
@@ -17,8 +17,58 @@ export function FlowchartEditor({
   selectedNodeId,
   onNodeSelect,
   onAddChildNode,
+  onAddNodeAtTier,
 }: FlowchartEditorProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Pan/drag state
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [scrollStart, setScrollStart] = useState({ x: 0, y: 0 });
+
+  // Pan/drag handlers
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isPanning || !containerRef.current) return;
+
+      const dx = e.clientX - panStart.x;
+      const dy = e.clientY - panStart.y;
+
+      containerRef.current.scrollLeft = scrollStart.x - dx;
+      containerRef.current.scrollTop = scrollStart.y - dy;
+    };
+
+    const handleMouseUp = () => {
+      setIsPanning(false);
+    };
+
+    if (isPanning) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [isPanning, panStart, scrollStart]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Only start panning on background, not on nodes or buttons
+    if (
+      e.target === canvasRef.current ||
+      (e.target as HTMLElement).tagName === "svg" ||
+      (e.target as HTMLElement).tagName === "rect"
+    ) {
+      setIsPanning(true);
+      setPanStart({ x: e.clientX, y: e.clientY });
+      setScrollStart({
+        x: containerRef.current?.scrollLeft || 0,
+        y: containerRef.current?.scrollTop || 0,
+      });
+    }
+  };
 
   // Advanced tree layout algorithm with proper spacing
   const nodePositions = useMemo(() => {
@@ -32,18 +82,10 @@ export function FlowchartEditor({
       return steps.filter((s) => s.prerequisites.includes(nodeId));
     };
 
-    // Calculate tier for each node (handle multiple parents)
-    const getTier = (nodeId: number, visited = new Set<number>()): number => {
-      if (visited.has(nodeId)) return 0;
-      visited.add(nodeId);
-
+    // Use stored tier values instead of calculating
+    const getTier = (nodeId: number): number => {
       const node = steps.find((s) => s.id === nodeId);
-      if (!node || node.prerequisites.length === 0) return 0;
-
-      const parentTiers = node.prerequisites.map((pid) =>
-        getTier(pid, new Set(visited))
-      );
-      return Math.max(...parentTiers) + 1;
+      return node ? node.tier : 0;
     };
 
     // Get all nodes at a specific tier
@@ -161,12 +203,65 @@ export function FlowchartEditor({
     return positions;
   }, [steps]);
 
+  // Calculate tier structure for empty tier detection
+  // Use stored tier values instead of calculating them
+  const tierStructure = useMemo(() => {
+    const maxTier =
+      steps.length > 0 ? Math.max(...steps.map((s) => s.tier)) : 0;
+    const tierMap = new Map<number, LearningStep[]>();
+
+    // Initialize all tiers from 0 to maxTier
+    for (let i = 0; i <= maxTier; i++) {
+      tierMap.set(i, []);
+    }
+
+    // Populate tiers with nodes using their stored tier values
+    steps.forEach((step) => {
+      if (!tierMap.has(step.tier)) {
+        tierMap.set(step.tier, []);
+      }
+      tierMap.get(step.tier)?.push(step);
+    });
+
+    return { tierMap, maxTier };
+  }, [steps]);
+
   const renderConnections = () => {
     const connections: JSX.Element[] = [];
+
+    // Find the mastery node (final convergence point)
+    const getTier = (nodeId: number): number => {
+      const node = steps.find((s) => s.id === nodeId);
+      if (!node || node.prerequisites.length === 0) return 0;
+      const parentTiers = node.prerequisites.map((pid) => getTier(pid));
+      return Math.max(...parentTiers) + 1;
+    };
+
+    const maxTier = Math.max(...steps.map((s) => getTier(s.id)));
+    const masteryNode = steps.find(
+      (s) =>
+        getTier(s.id) === maxTier &&
+        s.prerequisites.length > 1 &&
+        steps.filter((child) => child.prerequisites.includes(s.id)).length === 0
+    );
+
+    const masteryPos = masteryNode ? nodePositions.get(masteryNode.id) : null;
+    const masteryY = masteryPos?.y || null;
+
+    // Calculate the convergence Y position - 2em (32px) above mastery node
+    const convergenceY = masteryY !== null ? masteryY - 32 - 85 : null; // 85 is the node offset
+
+    // Get all node positions to check for clearance
+    const allNodePositions = Array.from(nodePositions.values());
 
     steps.forEach((step) => {
       const stepPos = nodePositions.get(step.id);
       if (!stepPos) return;
+
+      // Check if this is a leaf node (no children)
+      const hasChildren = steps.some((s) => s.prerequisites.includes(step.id));
+      const isLeaf = !hasChildren;
+      const isMastery = step.id === masteryNode?.id;
 
       step.prerequisites.forEach((prereqId) => {
         const prereqPos = nodePositions.get(prereqId);
@@ -175,13 +270,71 @@ export function FlowchartEditor({
         const colors = categoryColors[step.category];
 
         const startX = prereqPos.x;
-        const startY = prereqPos.y + 85;
+        const startY = prereqPos.y + 85; // Bottom of parent node
         const endX = stepPos.x;
-        const endY = stepPos.y - 85;
+        const endY = stepPos.y - 85; // Top of child node
 
-        const midY = (startY + endY) / 2;
+        let path: string;
 
-        const path = `M ${startX} ${startY} L ${startX} ${midY} L ${endX} ${midY} L ${endX} ${endY}`;
+        // Special routing for connections to the mastery node
+        if (isMastery && convergenceY !== null) {
+          const prereqNode = steps.find((s) => s.id === prereqId);
+          const prereqHasChildren = steps.some((s) =>
+            s.prerequisites.includes(prereqId)
+          );
+
+          // All connections to mastery should go through convergence zone
+          if (prereqNode && !prereqHasChildren) {
+            // This is a leaf node connecting to mastery
+            // Route DOWN past all nodes, then ACROSS at convergence level, then DOWN to mastery
+
+            // Find the lowest Y position of any node between this leaf and mastery
+            const nodesInPath = allNodePositions.filter((pos) => {
+              const isBetween = pos.y > startY && pos.y < convergenceY;
+              return isBetween;
+            });
+
+            let clearanceY = convergenceY;
+            if (nodesInPath.length > 0) {
+              const maxNodeY = Math.max(...nodesInPath.map((p) => p.y));
+              // Go below the lowest node + node height + padding
+              clearanceY = Math.max(clearanceY, maxNodeY + 85 + 60);
+            }
+
+            path = `M ${startX} ${startY} 
+                    L ${startX} ${clearanceY} 
+                    L ${endX} ${clearanceY} 
+                    L ${endX} ${endY}`;
+          } else {
+            // Non-leaf parent to mastery - also use convergence routing
+            path = `M ${startX} ${startY} 
+                    L ${startX} ${convergenceY} 
+                    L ${endX} ${convergenceY} 
+                    L ${endX} ${endY}`;
+          }
+        } else {
+          // Standard orthogonal routing for normal connections
+          // Check if there are nodes in the path and route around them
+          const midY = (startY + endY) / 2;
+
+          // Find nodes that might be in the way
+          const nodesInWay = allNodePositions.filter((pos) => {
+            const isInVerticalRange = pos.y > startY && pos.y < endY;
+            const isInHorizontalRange =
+              (startX < endX && pos.x > startX && pos.x < endX) ||
+              (startX > endX && pos.x < startX && pos.x > endX);
+            return isInVerticalRange && isInHorizontalRange;
+          });
+
+          let routingY = midY;
+          if (nodesInWay.length > 0) {
+            // Route below the nodes
+            const maxNodeY = Math.max(...nodesInWay.map((p) => p.y));
+            routingY = Math.max(midY, maxNodeY + 85 + 40); // 85 for node offset, 40 for clearance
+          }
+
+          path = `M ${startX} ${startY} L ${startX} ${routingY} L ${endX} ${routingY} L ${endX} ${endY}`;
+        }
 
         connections.push(
           <path
@@ -208,7 +361,131 @@ export function FlowchartEditor({
       });
     });
 
+    // Draw convergence zone if mastery node exists
+    if (masteryNode && convergenceY !== null) {
+      const leafNodes = steps.filter((s) => {
+        const hasChildren = steps.some((child) =>
+          child.prerequisites.includes(s.id)
+        );
+        return !hasChildren && s.id !== masteryNode.id;
+      });
+
+      if (leafNodes.length >= 1) {
+        const leafXPositions = leafNodes
+          .map((n) => nodePositions.get(n.id)?.x)
+          .filter((x) => x !== undefined) as number[];
+
+        // Include mastery node position
+        if (masteryPos) {
+          leafXPositions.push(masteryPos.x);
+        }
+
+        if (leafXPositions.length > 0) {
+          const minX = Math.min(...leafXPositions) - 80;
+          const maxX = Math.max(...leafXPositions) + 80;
+          const zoneHeight = 60;
+
+          // Draw convergence zone background
+          connections.push(
+            <rect
+              key="convergence-zone"
+              x={minX}
+              y={convergenceY - zoneHeight / 2}
+              width={maxX - minX}
+              height={zoneHeight}
+              fill="url(#convergence-gradient)"
+              rx={8}
+            />
+          );
+
+          // Draw convergence guideline
+          connections.push(
+            <line
+              key="convergence-line"
+              x1={minX + 20}
+              y1={convergenceY}
+              x2={maxX - 20}
+              y2={convergenceY}
+              stroke="#9333EA"
+              strokeWidth={2.5}
+              strokeDasharray="10 5"
+              opacity={0.4}
+            />
+          );
+
+          // Add label for convergence zone
+          connections.push(
+            <g key="convergence-label">
+              <rect
+                x={(minX + maxX) / 2 - 85}
+                y={convergenceY - zoneHeight / 2 - 24}
+                width={170}
+                height={26}
+                fill="#9333EA"
+                rx={13}
+                opacity={0.95}
+              />
+              <text
+                x={(minX + maxX) / 2}
+                y={convergenceY - zoneHeight / 2 - 6}
+                textAnchor="middle"
+                fill="white"
+                fontSize="12"
+                fontWeight="700"
+                letterSpacing="0.5"
+              >
+                CONVERGENCE ZONE
+              </text>
+            </g>
+          );
+        }
+      }
+    }
+
     return connections;
+  };
+
+  // Render add buttons for empty tiers
+  const renderEmptyTierButtons = () => {
+    const buttons: JSX.Element[] = [];
+    const VERTICAL_SPACING = 240;
+
+    tierStructure.tierMap.forEach((nodesInTier, tier) => {
+      if (
+        nodesInTier.length === 0 &&
+        tier > 0 &&
+        tier < tierStructure.maxTier
+      ) {
+        // This is an empty tier in the middle - show add button
+        const y = 120 + tier * VERTICAL_SPACING;
+        const x = 400; // Center position
+
+        buttons.push(
+          <div
+            key={`empty-tier-${tier}`}
+            className="absolute group"
+            style={{
+              left: `${x}px`,
+              top: `${y}px`,
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            <button
+              onClick={() => onAddNodeAtTier?.(tier)}
+              className="w-16 h-16 rounded-full bg-purple-500 hover:bg-purple-600 flex items-center justify-center shadow-xl hover:shadow-2xl transition-all hover:scale-110 border-4 border-white"
+              title={`Add node at tier ${tier}`}
+            >
+              <Plus className="w-8 h-8 text-white" />
+            </button>
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs bg-purple-600 text-white px-3 py-1 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              Add Node at Tier {tier}
+            </div>
+          </div>
+        );
+      }
+    });
+
+    return buttons;
   };
 
   const renderNode = (step: LearningStep) => {
@@ -368,52 +645,70 @@ export function FlowchartEditor({
   }, [nodePositions]);
 
   return (
-    <div className="relative w-full h-full bg-gradient-to-br from-slate-50 to-slate-100">
-      <ScrollArea className="w-full h-full">
-        <div
-          ref={canvasRef}
-          className="relative bg-gradient-to-br from-slate-50 to-slate-100"
+    <div
+      ref={containerRef}
+      className="relative w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 overflow-auto"
+      style={{ cursor: isPanning ? "grabbing" : "grab" }}
+    >
+      <div
+        ref={canvasRef}
+        className="relative bg-gradient-to-br from-slate-50 to-slate-100"
+        onMouseDown={handleMouseDown}
+        style={{
+          width: `${canvasSize.width}px`,
+          height: `${canvasSize.height}px`,
+          userSelect: "none",
+        }}
+      >
+        {/* Dot grid background */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{ zIndex: 0 }}
+        >
+          <defs>
+            <pattern
+              id="dot-grid"
+              width="30"
+              height="30"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="1" cy="1" r="1.5" fill="#CBD5E1" opacity="0.5" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dot-grid)" />
+        </svg>
+
+        {/* Connection lines */}
+        <svg
+          className="absolute inset-0 pointer-events-none"
           style={{
             width: `${canvasSize.width}px`,
             height: `${canvasSize.height}px`,
+            zIndex: 1,
           }}
         >
-          {/* Dot grid background */}
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            style={{ zIndex: 0 }}
-          >
-            <defs>
-              <pattern
-                id="dot-grid"
-                width="30"
-                height="30"
-                patternUnits="userSpaceOnUse"
-              >
-                <circle cx="1" cy="1" r="1.5" fill="#CBD5E1" opacity="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#dot-grid)" />
-          </svg>
+          <defs>
+            {/* Gradient for convergence zone */}
+            <linearGradient
+              id="convergence-gradient"
+              x1="0%"
+              y1="0%"
+              x2="0%"
+              y2="100%"
+            >
+              <stop offset="0%" stopColor="#9333EA" stopOpacity="0.05" />
+              <stop offset="100%" stopColor="#9333EA" stopOpacity="0.15" />
+            </linearGradient>
+          </defs>
+          {renderConnections()}
+        </svg>
 
-          {/* Connection lines */}
-          <svg
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              width: `${canvasSize.width}px`,
-              height: `${canvasSize.height}px`,
-              zIndex: 1,
-            }}
-          >
-            {renderConnections()}
-          </svg>
-
-          {/* Nodes */}
-          <div className="relative" style={{ zIndex: 2 }}>
-            {steps.map((step) => renderNode(step))}
-          </div>
+        {/* Nodes */}
+        <div className="relative" style={{ zIndex: 2 }}>
+          {steps.map((step) => renderNode(step))}
+          {renderEmptyTierButtons()}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

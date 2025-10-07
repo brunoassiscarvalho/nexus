@@ -6,9 +6,12 @@ import { AchievementPanel } from "./components/AchievementPanel";
 import { CompletionParticles } from "./components/CompletionParticles";
 import { SideMenu } from "./components/SideMenu";
 import { AdminPage } from "./components/AdminPage";
-import { learningSteps as initialSteps, categoryColors } from "./data/learningSteps";
+import {
+  learningSteps as initialSteps,
+  categoryColors,
+} from "./data/learningSteps";
 import { LearningStep, UserProgress } from "./types/learning";
-import { ScrollArea } from "./components/ui/scroll-area";
+import { ScrollArea } from "@nexus/ui";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,8 +21,9 @@ type Mode = "user" | "admin";
 export default function App() {
   const [mode, setMode] = useState<Mode>("user");
   const [menuCollapsed, setMenuCollapsed] = useState(false);
-  const [learningSteps, setLearningSteps] = useState<LearningStep[]>(initialSteps);
-  
+  const [learningSteps, setLearningSteps] =
+    useState<LearningStep[]>(initialSteps);
+
   const [progress, setProgress] = useState<UserProgress>({
     currentStep: 1,
     completedSteps: [],
@@ -29,9 +33,13 @@ export default function App() {
 
   const [currentView, setCurrentView] = useState<View>("tree");
   const [selectedStepId, setSelectedStepId] = useState<number | null>(null);
-  const [showParticles, setShowParticles] = useState<{ position: { x: number; y: number }; color: string } | null>(null);
+  const [showParticles, setShowParticles] = useState<{
+    position: { x: number; y: number };
+    color: string;
+  } | null>(null);
 
-  const selectedStep = learningSteps.find((step) => step.id === selectedStepId) || null;
+  const selectedStep =
+    learningSteps.find((step) => step.id === selectedStepId) || null;
 
   const handleModeChange = (newMode: Mode) => {
     setMode(newMode);
@@ -51,8 +59,9 @@ export default function App() {
     if (!step) return;
 
     // Check if all prerequisites are completed
-    const isUnlocked = step.prerequisites.length === 0 ||
-      step.prerequisites.every(prereqId => 
+    const isUnlocked =
+      step.prerequisites.length === 0 ||
+      step.prerequisites.every((prereqId) =>
         progress.completedSteps.includes(prereqId)
       );
 
@@ -66,49 +75,60 @@ export default function App() {
   const handleCompleteStep = () => {
     if (!selectedStep) return;
 
-    const isAlreadyCompleted = progress.completedSteps.includes(selectedStep.id);
-    
+    const isAlreadyCompleted = progress.completedSteps.includes(
+      selectedStep.id
+    );
+
     if (!isAlreadyCompleted) {
       const newCompletedSteps = [...progress.completedSteps, selectedStep.id];
-      const newTotalPoints = progress.totalSkillPoints + selectedStep.skillPoints;
-      
+      const newTotalPoints =
+        progress.totalSkillPoints + selectedStep.skillPoints;
+
       // Check for new achievements
       const newAchievements = [...progress.achievements];
-      
+
       // Check tier completion
-      const tierSteps = learningSteps.filter(s => s.tier === selectedStep.tier);
-      const completedInTier = tierSteps.filter(s => newCompletedSteps.includes(s.id));
+      const tierSteps = learningSteps.filter(
+        (s) => s.tier === selectedStep.tier
+      );
+      const completedInTier = tierSteps.filter((s) =>
+        newCompletedSteps.includes(s.id)
+      );
       if (completedInTier.length === tierSteps.length) {
         const achievementId = `tier-${selectedStep.tier}`;
         if (!newAchievements.includes(achievementId)) {
           newAchievements.push(achievementId);
         }
       }
-      
+
       // Check category completion
-      const categorySteps = learningSteps.filter(s => s.category === selectedStep.category);
-      const completedInCategory = categorySteps.filter(s => newCompletedSteps.includes(s.id));
+      const categorySteps = learningSteps.filter(
+        (s) => s.category === selectedStep.category
+      );
+      const completedInCategory = categorySteps.filter((s) =>
+        newCompletedSteps.includes(s.id)
+      );
       if (completedInCategory.length === categorySteps.length) {
         const achievementId = `category-${selectedStep.category}`;
         if (!newAchievements.includes(achievementId)) {
           newAchievements.push(achievementId);
         }
       }
-      
+
       // Check mastery
       if (newCompletedSteps.length === learningSteps.length) {
         if (!newAchievements.includes("mastery")) {
           newAchievements.push("mastery");
         }
       }
-      
+
       setProgress({
         currentStep: selectedStep.id,
         completedSteps: newCompletedSteps,
         totalSkillPoints: newTotalPoints,
         achievements: newAchievements,
       });
-      
+
       // Trigger particle effect
       setShowParticles({
         position: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
@@ -215,7 +235,7 @@ export default function App() {
             />
           </div>
         </div>
-        
+
         {/* Particle effects */}
         {showParticles && (
           <CompletionParticles

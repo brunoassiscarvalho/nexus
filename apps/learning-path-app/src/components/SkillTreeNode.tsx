@@ -62,18 +62,11 @@ export function SkillTreeNode({
   const nodeStyle = getNodeStyle();
 
   return (
-    <div
-      className="absolute group"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        transform: "translate(-50%, -50%)",
-      }}
-    >
+    <div className="relative group inline-block">
       {/* Glow effect for unlocked nodes */}
       {isUnlocked && !isCompleted && (
         <div
-          className="absolute inset-0 rounded-full blur-xl opacity-50 animate-pulse"
+          className="absolute inset-0 rounded-full blur-xl opacity-50 animate-pulse pointer-events-none"
           style={{
             background: colors.glow,
             transform: "scale(1.5)",
@@ -84,7 +77,7 @@ export function SkillTreeNode({
       {/* Pulsing ring for current step */}
       {isCurrent && (
         <div
-          className="absolute inset-0 rounded-full animate-ping"
+          className="absolute inset-0 rounded-full animate-ping pointer-events-none"
           style={{
             border: `3px solid ${colors.border}`,
             transform: "scale(1.2)",
@@ -92,9 +85,7 @@ export function SkillTreeNode({
         />
       )}
 
-      <button
-        onClick={onClick}
-        disabled={!isUnlocked}
+      <div
         data-step-id={step.id}
         className={cn(
           "relative w-20 h-20 rounded-full border-4 flex items-center justify-center transition-all duration-300",
@@ -112,12 +103,12 @@ export function SkillTreeNode({
             <span className="text-xs text-yellow-900">{step.skillPoints}</span>
           </div>
         )}
-      </button>
+      </div>
 
       {/* Tooltip on hover */}
-      <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+      <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
         <div
-          className="whitespace-nowrap px-4 py-2 rounded-lg border-2 shadow-xl backdrop-blur-sm"
+          className="px-4 py-2 rounded-lg border-2 shadow-xl backdrop-blur-sm"
           style={{
             backgroundColor: colors.secondary,
             borderColor: colors.border,

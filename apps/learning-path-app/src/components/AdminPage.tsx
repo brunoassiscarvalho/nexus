@@ -2,15 +2,15 @@ import { useState } from "react";
 import { LearningStep } from "../types/learning";
 import { FlowchartEditor } from "./FlowchartEditor";
 import { NodeEditor } from "./NodeEditor";
+import { Button } from "@nexus/ui";
+import { Plus, Save, Download, Info } from "lucide-react";
+import { toast } from "sonner@2.0.3";
 import {
-  Button,
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@nexus/ui";
-import { Plus, Save, Download, Info } from "lucide-react";
-import { toast } from "sonner";
 
 interface AdminPageProps {
   steps: LearningStep[];
@@ -43,6 +43,40 @@ export function AdminPage({ steps, onSaveSteps }: AdminPageProps) {
     setEditingSteps([...editingSteps, newStep]);
     setSelectedNodeId(newId);
     toast.success("New root node created");
+  };
+
+  const handleAddNodeAtTier = (tier: number) => {
+    const newId = Math.max(...editingSteps.map((s) => s.id), 0) + 1;
+
+    // Find nodes in the tier above (potential parents)
+    const parentTier = tier - 1;
+    const potentialParents = editingSteps.filter((s) => s.tier === parentTier);
+
+    if (potentialParents.length === 0) {
+      toast.error(`No nodes found in tier ${parentTier} to connect as parent`);
+      return;
+    }
+
+    // Use the first parent found
+    const parent = potentialParents[0];
+
+    const newStep: LearningStep = {
+      id: newId,
+      title: "New Skill",
+      description: "Add a description for this skill",
+      content:
+        "Add detailed content about what the learner will achieve in this step.",
+      imageUrl: parent.imageUrl,
+      skillPoints: 10,
+      prerequisites: [parent.id],
+      tier: tier,
+      position: 0,
+      category: parent.category,
+    };
+
+    setEditingSteps([...editingSteps, newStep]);
+    setSelectedNodeId(newId);
+    toast.success(`New node created at tier ${tier}`);
   };
 
   const handleAddChildNode = (parentId: number) => {
@@ -184,6 +218,7 @@ export function AdminPage({ steps, onSaveSteps }: AdminPageProps) {
       masteryNode?.prerequisites.includes(nodeId) || false;
 
     // Update all children to point to the deleted node's parent
+    // IMPORTANT: Keep children at their current tier - don't collapse the tree
     let updatedSteps = editingSteps
       .filter((s) => s.id !== nodeId) // Remove the node
       .map((s) => {
@@ -194,6 +229,7 @@ export function AdminPage({ steps, onSaveSteps }: AdminPageProps) {
             prerequisites: s.prerequisites
               .filter((p) => p !== nodeId) // Remove the deleted node
               .concat(parentId), // Add the deleted node's parent
+            // Keep the tier unchanged - this preserves empty tiers
           };
         }
         return s;
@@ -411,6 +447,7 @@ export function AdminPage({ steps, onSaveSteps }: AdminPageProps) {
           selectedNodeId={selectedNodeId}
           onNodeSelect={setSelectedNodeId}
           onAddChildNode={handleAddChildNode}
+          onAddNodeAtTier={handleAddNodeAtTier}
         />
 
         {/* Floating side editor panel - overlays on the right */}

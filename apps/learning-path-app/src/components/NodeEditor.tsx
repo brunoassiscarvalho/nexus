@@ -20,8 +20,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { categoryColors } from "../data/learningSteps";
-import { ScrollArea } from "@nexus/ui";
-import { Separator } from "@nexus/ui";
+import { ScrollArea, Separator } from "@nexus/ui";
 
 interface NodeEditorProps {
   node: LearningStep;
