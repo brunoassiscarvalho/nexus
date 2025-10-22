@@ -361,87 +361,6 @@ export function FlowchartEditor({
       });
     });
 
-    // Draw convergence zone if mastery node exists
-    if (masteryNode && convergenceY !== null) {
-      const leafNodes = steps.filter((s) => {
-        const hasChildren = steps.some((child) =>
-          child.prerequisites.includes(s.id)
-        );
-        return !hasChildren && s.id !== masteryNode.id;
-      });
-
-      if (leafNodes.length >= 1) {
-        const leafXPositions = leafNodes
-          .map((n) => nodePositions.get(n.id)?.x)
-          .filter((x) => x !== undefined) as number[];
-
-        // Include mastery node position
-        if (masteryPos) {
-          leafXPositions.push(masteryPos.x);
-        }
-
-        if (leafXPositions.length > 0) {
-          const minX = Math.min(...leafXPositions) - 80;
-          const maxX = Math.max(...leafXPositions) + 80;
-          const zoneHeight = 60;
-
-          // Draw convergence zone background
-          connections.push(
-            <rect
-              key="convergence-zone"
-              x={minX}
-              y={convergenceY - zoneHeight / 2}
-              width={maxX - minX}
-              height={zoneHeight}
-              fill="url(#convergence-gradient)"
-              rx={8}
-            />
-          );
-
-          // Draw convergence guideline
-          connections.push(
-            <line
-              key="convergence-line"
-              x1={minX + 20}
-              y1={convergenceY}
-              x2={maxX - 20}
-              y2={convergenceY}
-              stroke="#9333EA"
-              strokeWidth={2.5}
-              strokeDasharray="10 5"
-              opacity={0.4}
-            />
-          );
-
-          // Add label for convergence zone
-          connections.push(
-            <g key="convergence-label">
-              <rect
-                x={(minX + maxX) / 2 - 85}
-                y={convergenceY - zoneHeight / 2 - 24}
-                width={170}
-                height={26}
-                fill="#9333EA"
-                rx={13}
-                opacity={0.95}
-              />
-              <text
-                x={(minX + maxX) / 2}
-                y={convergenceY - zoneHeight / 2 - 6}
-                textAnchor="middle"
-                fill="white"
-                fontSize="12"
-                fontWeight="700"
-                letterSpacing="0.5"
-              >
-                CONVERGENCE ZONE
-              </text>
-            </g>
-          );
-        }
-      }
-    }
-
     return connections;
   };
 
@@ -592,37 +511,17 @@ export function FlowchartEditor({
         </button>
 
         {/* Add Child Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddChildNode(step.id);
-          }}
-          className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-700 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10"
-          title="Add child node"
-        >
-          <Plus className="w-6 h-6 text-white" />
-        </button>
-
-        {/* Mastery Challenge indicator */}
-        {isMasteryChallenge && (
-          <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-xs bg-purple-600 text-white px-3 py-1 rounded-full shadow-md pointer-events-none flex items-center gap-1">
-            <Star className="w-3 h-3" />
-            MASTERY CHALLENGE
-          </div>
-        )}
-
-        {/* Root indicator */}
-        {isRoot && !isMasteryChallenge && (
-          <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-xs bg-amber-500 text-white px-3 py-1 rounded-full shadow-md pointer-events-none">
-            ROOT
-          </div>
-        )}
-
-        {/* Leaf indicator */}
-        {!hasChildren && !isRoot && !isMasteryChallenge && (
-          <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-xs bg-green-500 text-white px-3 py-1 rounded-full shadow-md pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-            LEAF
-          </div>
+        {!isMasteryChallenge && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddChildNode(step.id);
+            }}
+            className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-700 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10"
+            title="Add child node"
+          >
+            <Plus className="w-6 h-6 text-white" />
+          </button>
         )}
       </div>
     );

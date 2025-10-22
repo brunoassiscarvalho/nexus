@@ -1,0 +1,82 @@
+{
+  "name": "UseCase",
+  "type": "object",
+  "properties": {
+    "api_id": {
+      "type": "string",
+      "description": "ID da API"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nome do use case"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descrição do fluxo"
+    },
+    "flow": {
+      "type": "object",
+      "description": "Estrutura do fluxo drag-and-drop",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "endpoint_id": {
+                "type": "string"
+              },
+              "position": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "param_mapping": {
+                "type": "array",
+                "description": "Mapeamento de parâmetros",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "source_param": {
+                      "type": "string"
+                    },
+                    "target_param": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["api_id", "name"]
+}

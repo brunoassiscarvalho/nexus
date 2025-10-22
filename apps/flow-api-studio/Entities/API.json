@@ -1,0 +1,24 @@
+{
+  "name": "API",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome da API"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descrição da API"
+    },
+    "version": {
+      "type": "string",
+      "description": "Versão da API",
+      "default": "1.0.0"
+    },
+    "base_url": {
+      "type": "string",
+      "description": "URL base da API"
+    }
+  },
+  "required": ["name"]
+}
