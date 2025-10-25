@@ -5,11 +5,11 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+  Label,
+  Input,
+  Textarea,
+  Button,
+} from "@nexus/ui";
 import { XCircle, Save } from "lucide-react";
 
 export default function APIForm({ api, onSubmit, onCancel }) {
