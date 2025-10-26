@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { LearningStep, SkillCategory } from "../types/learning";
-import { Button } from "@nexus/ui";
-import { Input } from "@nexus/ui";
-import { Textarea } from "@nexus/ui";
-import { Label } from "@nexus/ui";
 import {
+  Button,
+  Label,
+  Input,
+  Textarea,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  ScrollArea,
+  Separator,
 } from "@nexus/ui";
 import {
   X,
@@ -20,7 +22,6 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { categoryColors } from "../data/learningSteps";
-import { ScrollArea, Separator } from "@nexus/ui";
 
 interface NodeEditorProps {
   node: LearningStep;

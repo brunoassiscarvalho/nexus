@@ -1,21 +1,34 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
+import {
+  Button,
+  Progress,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@nexus/ui";
 import { ArrowLeft, Play, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 
 export default function UseCaseExecutor() {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const useCaseId = urlParams.get("id");
 
-  const [executing, setExecuting] = useState(false);
-  const [executionLog, setExecutionLog] = useState([]);
-  const [currentStep, setCurrentStep] = useState(0);
+  type ExecutionLogEntry = {
+    step: number;
+    endpoint?: string;
+    status: "running" | "success" | "error";
+    message: string;
+    response?: Record<string, any>;
+  };
+
+  const [executing, setExecuting] = useState<boolean>(false);
+  const [executionLog, setExecutionLog] = useState<ExecutionLogEntry[]>([]);
+  const [currentStep, setCurrentStep] = useState<number>(0);
 
   const { data: useCase, isLoading } = useQuery({
     queryKey: ["usecase", useCaseId],
@@ -38,7 +51,8 @@ export default function UseCaseExecutor() {
   };
 
   const executeUseCase = async () => {
-    if (!useCase?.flow?.nodes || useCase.flow.nodes.length === 0) {
+    const flow = (useCase as any)?.flow;
+    if (!flow?.nodes || flow.nodes.length === 0) {
       alert("Este use case não possui um fluxo configurado");
       return;
     }
@@ -47,9 +61,9 @@ export default function UseCaseExecutor() {
     setExecutionLog([]);
     setCurrentStep(0);
 
-    const nodes = useCase.flow.nodes;
-    const connections = useCase.flow.connections || [];
-    const results = {};
+    const nodes = flow.nodes;
+    const connections = flow.connections || [];
+    const results: Record<string, any> = {};
 
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
@@ -107,7 +121,6 @@ export default function UseCaseExecutor() {
 
     setExecuting(false);
   };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -116,7 +129,8 @@ export default function UseCaseExecutor() {
     );
   }
 
-  const totalSteps = useCase?.flow?.nodes?.length || 0;
+  const totalSteps = (useCase as any)?.flow?.nodes?.length || 0;
+  const progress = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
   const progress = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
 
   return (

@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { useState, useEffect } from "react";
+import { base44 } from "../api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, Button } from "@nexus/ui";
 import { Database, GitBranch, Link as LinkIcon, Play } from "lucide-react";
 import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Button } from "@/components/ui/button";
+import { createPageUrl } from "../utils";
 
 export default function Dashboard() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     loadUser();

@@ -1,11 +1,26 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@nexus/ui";
 import { Pencil, Trash2, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+interface APICardProps {
+  api: {
+    id: string;
+    name: string;
+    description?: string;
+    version: string;
+    base_url?: string;
+  };
+  isEditor?: boolean;
+  onEdit?: (api: any) => void;
+  onDelete?: (apiId: string) => void;
+}
 
-export default function APICard({ api, isEditor, onEdit, onDelete }) {
+export default function APICard({
+  api,
+  isEditor,
+  onEdit,
+  onDelete,
+}: Readonly<APICardProps>) {
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-full transform translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-500" />
@@ -25,7 +40,7 @@ export default function APICard({ api, isEditor, onEdit, onDelete }) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => onEdit(api)}
+                onClick={() => onEdit?.(api)}
                 className="hover:bg-blue-50 hover:text-blue-600"
               >
                 <Pencil className="w-4 h-4" />
@@ -33,7 +48,7 @@ export default function APICard({ api, isEditor, onEdit, onDelete }) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => onDelete(api.id)}
+                onClick={() => onDelete?.(api.id)}
                 className="hover:bg-red-50 hover:text-red-600"
               >
                 <Trash2 className="w-4 h-4" />

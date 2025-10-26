@@ -52,11 +52,12 @@ export function AchievementPanel({ steps, progress }: AchievementPanelProps) {
 
     if (isComplete) {
       const achievementId = `category-${category}`;
-      const categoryNames = {
+      const categoryNames: Record<SkillCategory, string> = {
         reading: "Reading Champion",
         speaking: "Speaking Expert",
         writing: "Writing Master",
         listening: "Listening Pro",
+        foundation: "Foundation Builder",
       };
 
       achievements.push({

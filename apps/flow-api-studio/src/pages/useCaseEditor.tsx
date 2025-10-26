@@ -1,21 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { useState } from "react";
+import { base44 } from "../api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Progress,
+} from "@nexus/ui";
 import { ArrowLeft, Play, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { createPageUrl } from "../utils";
 
 export default function UseCaseExecutor() {
   const navigate = useNavigate();
-  const urlParams = new URLSearchParams(window.location.search);
-  const useCaseId = urlParams.get("id");
+  const urlParams = new URLSearchParams(globalThis.location.search);
+  const useCaseId = urlParams.get("id") || "";
 
-  const [executing, setExecuting] = useState(false);
-  const [executionLog, setExecutionLog] = useState([]);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [executing, setExecuting] = useState<any>(false);
+  const [executionLog, setExecutionLog] = useState<any[]>([]);
+  const [currentStep, setCurrentStep] = useState<number>(0);
 
   const { data: useCase, isLoading } = useQuery({
     queryKey: ["usecase", useCaseId],
@@ -28,13 +33,13 @@ export default function UseCaseExecutor() {
 
   const { data: endpoints } = useQuery({
     queryKey: ["endpoints", useCase?.api_id],
-    queryFn: () => base44.entities.Endpoint.filter({ api_id: useCase.api_id }),
+    queryFn: () => base44.entities.Endpoint.filter({ api_id: useCase?.api_id }),
     initialData: [],
     enabled: !!useCase?.api_id,
   });
 
-  const getEndpointById = (endpointId) => {
-    return endpoints.find((ep) => ep.id === endpointId);
+  const getEndpointById = (endpointId: string) => {
+    return endpoints.find((ep: { id: string }) => ep.id === endpointId);
   };
 
   const executeUseCase = async () => {
@@ -48,12 +53,12 @@ export default function UseCaseExecutor() {
     setCurrentStep(0);
 
     const nodes = useCase.flow.nodes;
-    const connections = useCase.flow.connections || [];
-    const results = {};
+    const connections = (useCase.flow as any)?.connections || [];
+    const results: Record<string, any> = {};
 
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
-      const endpoint = getEndpointById(node.endpoint_id);
+      const endpoint = getEndpointById((node as any).endpoint_id ?? "");
 
       setCurrentStep(i + 1);
 
@@ -70,25 +75,51 @@ export default function UseCaseExecutor() {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       const incomingConnection = connections.find(
-        (conn) => conn.to === node.id
-      );
-      let params = {};
+        (conn: any) => conn.to === node.id
+      ) as
+        | {
+            from?: string;
+            param_mapping?: Array<{
+              target_param: string | number;
+              source_param: string | number;
+            }>;
+          }
+        | undefined;
+      const params: Record<string, any> = {};
 
-      if (incomingConnection && results[incomingConnection.from]) {
+      if (
+        incomingConnection &&
+        typeof incomingConnection.from === "string" &&
+        results[incomingConnection.from]
+      ) {
         const mapping = incomingConnection.param_mapping || [];
-        mapping.forEach((map) => {
-          params[map.target_param] =
-            results[incomingConnection.from][map.source_param];
-        });
+        mapping.forEach(
+          (map: {
+            target_param: string | number;
+            source_param: string | number;
+          }) => {
+            const sourceKey = String(map.source_param);
+            const targetKey = String(map.target_param);
+            params[targetKey] = (results as Record<string, any>)[
+              incomingConnection.from!
+            ][sourceKey];
+          }
+        );
       }
 
       const mockResponse = {
         status: "success",
         data:
-          endpoint?.response_params?.reduce((acc, param) => {
-            acc[param.name] = `mock_${param.name}_value`;
-            return acc;
-          }, {}) || {},
+          endpoint?.response_params?.reduce<Record<string, any>>(
+            (
+              acc: { [x: string]: string },
+              param: { name: string | number }
+            ) => {
+              acc[param.name] = `mock_${param.name}_value`;
+              return acc;
+            },
+            {}
+          ) || {},
       };
 
       results[node.id] = mockResponse.data;

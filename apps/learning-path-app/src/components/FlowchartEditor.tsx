@@ -1,7 +1,7 @@
 import { useRef, useMemo, useState, useEffect } from "react";
 import { LearningStep } from "../types/learning";
 import { categoryColors } from "../data/learningSteps";
-import { Plus, Star } from "lucide-react";
+import { Plus } from "lucide-react";
 import { cn } from "@nexus/ui";
 
 interface FlowchartEditorProps {

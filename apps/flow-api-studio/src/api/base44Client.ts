@@ -1,43 +1,7 @@
 // Mock API client for base44 backend
 // This is a placeholder implementation that simulates the API calls
 
-interface User {
-  id: string;
-  full_name: string;
-  email: string;
-  persona: "editor" | "visualizador";
-}
-
-interface API {
-  id: string;
-  name: string;
-  description: string;
-  created_date: string;
-}
-
-interface Endpoint {
-  id: string;
-  api_id: string;
-  name: string;
-  method: string;
-  path: string;
-  description: string;
-}
-
-interface UseCase {
-  id: string;
-  api_id: string;
-  name: string;
-  description: string;
-  created_date: string;
-}
-
-interface TestData {
-  id: string;
-  endpoint_id: string;
-  name: string;
-  data: any;
-}
+import type { User, API, Endpoint, UseCase, TestData } from "../definitions";
 
 // Mock data
 const mockUsers: User[] = [
@@ -60,6 +24,8 @@ const mockAPIs: API[] = [
     id: "1",
     name: "User Management API",
     description: "API for managing users",
+    version: "1.0.0",
+    base_url: "https://api.example.com/v1",
     created_date: "2024-01-01T00:00:00Z",
   },
 ];
@@ -72,6 +38,15 @@ const mockEndpoints: Endpoint[] = [
     method: "GET",
     path: "/users",
     description: "Retrieve all users",
+    request_params: [],
+    response_params: [
+      {
+        name: "users",
+        type: "array",
+        description: "Array of user objects",
+        required: true,
+      },
+    ],
   },
 ];
 
@@ -82,6 +57,23 @@ const mockUseCases: UseCase[] = [
     name: "User Registration Flow",
     description: "Complete user registration process",
     created_date: "2024-01-01T00:00:00Z",
+    flow: {
+      nodes: [
+        {
+          id: "start",
+          type: "start",
+          position: { x: 100, y: 100 },
+          data: { label: "Start" },
+        },
+        {
+          id: "end",
+          type: "end",
+          position: { x: 500, y: 100 },
+          data: { label: "End" },
+        },
+      ],
+      edges: [],
+    },
   },
 ];
 

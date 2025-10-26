@@ -1,22 +1,20 @@
 import React, { useState } from "react";
-import {
+ {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardFooter,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
+},
+import { Input } from "@nexus/ui"; { Textarea }
+import { Button } from "@nexus/ui"; { Label }
+ {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+},
 import { XCircle, Save, Plus, Trash2 } from "lucide-react";
 
 export default function EndpointForm({ endpoint, onSubmit, onCancel }) {

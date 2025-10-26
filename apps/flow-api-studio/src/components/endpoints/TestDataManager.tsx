@@ -1,25 +1,50 @@
-import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { useState } from "react";
+import { base44 } from "../../api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+  Input,
+  Label,
+  Textarea,
+} from "@nexus/ui";
 import { Plus, Trash2, Save } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
+import type { Endpoint, TestData } from "../../definitions";
 
-export default function TestDataManager({ endpoint, isEditor }) {
+interface TestDataManagerProps {
+  endpoint: Endpoint;
+  isEditor: boolean;
+}
+
+type EditingData = {
+  name: string;
+  dataStr: string;
+  expectedResponseStr: string;
+} | null;
+
+export default function TestDataManager({
+  endpoint,
+  isEditor,
+}: Readonly<TestDataManagerProps>) {
   const queryClient = useQueryClient();
-  const [editingData, setEditingData] = useState(null);
+  const [editingData, setEditingData] = useState<EditingData>(null);
 
-  const { data: testDataList } = useQuery({
+  const { data: testDataList = [] } = useQuery<TestData[]>({
     queryKey: ["testdata", endpoint.id],
     queryFn: () =>
       base44.entities.TestData.filter({ endpoint_id: endpoint.id }),
     initialData: [],
+    enabled: !!endpoint.id,
   });
 
-  const createTestDataMutation = useMutation({
+  const createTestDataMutation = useMutation<
+    TestData,
+    unknown,
+    Omit<TestData, "id"> & { expected_response?: any }
+  >({
     mutationFn: (data) => base44.entities.TestData.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["testdata", endpoint.id] });
@@ -27,7 +52,7 @@ export default function TestDataManager({ endpoint, isEditor }) {
     },
   });
 
-  const deleteTestDataMutation = useMutation({
+  const deleteTestDataMutation = useMutation<void, unknown, string>({
     mutationFn: (id) => base44.entities.TestData.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["testdata", endpoint.id] });
@@ -43,13 +68,18 @@ export default function TestDataManager({ endpoint, isEditor }) {
         editingData.expectedResponseStr || "{}"
       );
 
+      // createTestDataMutation accepts expected_response in its variables
+      // type so we can pass it directly.
       createTestDataMutation.mutate({
         endpoint_id: endpoint.id,
         name: editingData.name,
         data,
         expected_response: expectedResponse,
       });
-    } catch (error) {
+    } catch (err) {
+      // Log the error to help debugging and show a user-friendly message
+      // eslint-disable-next-line no-console
+      console.error(err);
       alert("Erro no formato JSON. Verifique os dados.");
     }
   };
@@ -66,21 +96,7 @@ export default function TestDataManager({ endpoint, isEditor }) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {!editingData ? (
-              <Button
-                onClick={() =>
-                  setEditingData({
-                    name: "",
-                    dataStr: "{}",
-                    expectedResponseStr: "{}",
-                  })
-                }
-                className="w-full"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Conjunto de Teste
-              </Button>
-            ) : (
+            {editingData ? (
               <>
                 <div className="space-y-2">
                   <Label>Nome do Conjunto</Label>
@@ -134,6 +150,20 @@ export default function TestDataManager({ endpoint, isEditor }) {
                   </Button>
                 </div>
               </>
+            ) : (
+              <Button
+                onClick={() =>
+                  setEditingData({
+                    name: "",
+                    dataStr: "{}",
+                    expectedResponseStr: "{}",
+                  })
+                }
+                className="w-full"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Conjunto de Teste
+              </Button>
             )}
           </CardContent>
         </Card>

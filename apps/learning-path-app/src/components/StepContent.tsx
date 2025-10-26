@@ -5,9 +5,9 @@ import {
   DialogTitle,
   DialogDescription,
   Button,
+  ImageWithFallback,
 } from "@nexus/ui";
 import { LearningStep } from "../types/learning";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Trophy } from "lucide-react";
 
 interface StepContentProps {

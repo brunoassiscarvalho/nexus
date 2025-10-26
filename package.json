@@ -13,14 +13,16 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --ignore-path .gitignore"
   },
   "devDependencies": {
-    "prettier": "^3.1.1",
-    "turbo": "latest",
     "@eslint/js": "^9.9.0",
-    "eslint": "^9.9.0",
     "@typescript-eslint/eslint-plugin": "^8.0.1",
-    "@typescript-eslint/parser": "^8.0.1"
+    "@typescript-eslint/parser": "^8.0.1",
+    "eslint": "^9.9.0",
+    "prettier": "^3.1.1",
+    "turbo": "latest"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.5",
+    "date-fns": "^3.6.0",
     "tsconfig-paths": "^4.2.0"
   },
   "packageManager": "npm@10.9.0"

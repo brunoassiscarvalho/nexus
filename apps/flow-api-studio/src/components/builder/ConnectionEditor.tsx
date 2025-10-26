@@ -1,16 +1,57 @@
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { useState, useEffect } from "react";
 import {
+  Button,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+  Label,
+  Card,
+  Badge,
+} from "@nexus/ui";
+
 import { X, Plus, Trash2, ArrowRight, CheckCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+
+type Param = {
+  name: string;
+  type?: string;
+  required?: boolean;
+};
+
+type Endpoint = {
+  id: string;
+  name?: string;
+  path?: string;
+  method?: string;
+  response_params?: Param[];
+  request_params?: Param[];
+};
+
+type NodeType = {
+  id: string;
+  endpoint_id?: string | null;
+};
+
+type Mapping = {
+  source_param: string;
+  target_param: string;
+};
+
+type Connection = {
+  id: string;
+  from: string;
+  to: string;
+  param_mapping?: Mapping[];
+};
+
+type Props = {
+  connection: Connection;
+  nodes: NodeType[];
+  endpoints: Endpoint[];
+  onUpdate: (connectionId: string, mappings: Mapping[]) => void;
+  onClose: () => void;
+};
 
 export default function ConnectionEditor({
   connection,
@@ -18,7 +59,7 @@ export default function ConnectionEditor({
   endpoints,
   onUpdate,
   onClose,
-}) {
+}: Readonly<Props>) {
   const fromNode = nodes.find((n) => n.id === connection.from);
   const toNode = nodes.find((n) => n.id === connection.to);
 
@@ -38,22 +79,17 @@ export default function ConnectionEditor({
     onUpdate(connection.id, newMappings);
   };
 
-  const updateMapping = (index, field, value) => {
+  const updateMapping = (index: number, field: string, value: string) => {
     const newMappings = [...mappings];
     newMappings[index] = { ...newMappings[index], [field]: value };
     setMappings(newMappings);
     onUpdate(connection.id, newMappings);
   };
 
-  const removeMapping = (index) => {
+  const removeMapping = (index: number) => {
     const newMappings = mappings.filter((_, i) => i !== index);
     setMappings(newMappings);
     onUpdate(connection.id, newMappings);
-  };
-
-  const getParamType = (params, paramName) => {
-    const param = params?.find((p) => p.name === paramName);
-    return param?.type || "";
   };
 
   const methodColors = {
@@ -99,7 +135,7 @@ export default function ConnectionEditor({
             <div className="ml-8 space-y-2">
               <div className="flex items-center gap-2">
                 <Badge
-                  className={`${methodColors[fromEndpoint?.method]} border font-mono text-xs`}
+                  className={`${(fromEndpoint?.method && methodColors[fromEndpoint.method as keyof typeof methodColors]) || ""} border font-mono text-xs`}
                 >
                   {fromEndpoint?.method}
                 </Badge>
@@ -114,7 +150,7 @@ export default function ConnectionEditor({
                 <span className="text-xs font-semibold text-green-900">
                   Parâmetros de Saída:
                 </span>
-                {fromEndpoint?.response_params?.length > 0 ? (
+                {fromEndpoint?.response_params?.length ? (
                   <ul className="mt-2 space-y-1">
                     {fromEndpoint.response_params.map((param, idx) => (
                       <li key={idx} className="text-xs flex items-center gap-2">
@@ -151,7 +187,7 @@ export default function ConnectionEditor({
             <div className="ml-8 space-y-2">
               <div className="flex items-center gap-2">
                 <Badge
-                  className={`${methodColors[toEndpoint?.method]} border font-mono text-xs`}
+                  className={`${(toEndpoint?.method && methodColors[toEndpoint.method as keyof typeof methodColors]) || ""} border font-mono text-xs`}
                 >
                   {toEndpoint?.method}
                 </Badge>
@@ -166,7 +202,7 @@ export default function ConnectionEditor({
                 <span className="text-xs font-semibold text-blue-900">
                   Parâmetros de Entrada:
                 </span>
-                {toEndpoint?.request_params?.length > 0 ? (
+                {toEndpoint?.request_params?.length ? (
                   <ul className="mt-2 space-y-1">
                     {toEndpoint.request_params.map((param, idx) => (
                       <li key={idx} className="text-xs flex items-center gap-2">

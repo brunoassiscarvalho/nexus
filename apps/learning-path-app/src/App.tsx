@@ -11,7 +11,7 @@ import {
   categoryColors,
 } from "./data/learningSteps";
 import { LearningStep, UserProgress } from "./types/learning";
-import { ScrollArea } from "@nexus/ui";
+
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 

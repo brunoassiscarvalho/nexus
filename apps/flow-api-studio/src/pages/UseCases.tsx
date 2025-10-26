@@ -1,26 +1,28 @@
-import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { useState, useEffect } from "react";
+import { base44 } from "../api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
+import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from "@nexus/ui";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createPageUrl } from "../utils";
 
 import EndpointList from "../components/endpoints/EndpointList";
 import EndpointForm from "../components/endpoints/EndpointForm";
 import TestDataManager from "../components/endpoints/TestDataManager";
+import type { Endpoint } from "../definitions";
 
 export default function APIDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [showEndpointForm, setShowEndpointForm] = useState(false);
-  const [editingEndpoint, setEditingEndpoint] = useState(null);
-  const [selectedEndpoint, setSelectedEndpoint] = useState(null);
+  const [editingEndpoint, setEditingEndpoint] = useState<Endpoint | null>(null);
+  const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(
+    null
+  );
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const apiId = urlParams.get("id");
+  const urlParams = new URLSearchParams(globalThis.location.search);
+  const apiId = urlParams.get("id") || "";
 
   useEffect(() => {
     loadUser();
@@ -52,7 +54,7 @@ export default function APIDetail() {
   });
 
   const createEndpointMutation = useMutation({
-    mutationFn: (data) =>
+    mutationFn: (data: any) =>
       base44.entities.Endpoint.create({ ...data, api_id: apiId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["endpoints", apiId] });
@@ -62,7 +64,8 @@ export default function APIDetail() {
   });
 
   const updateEndpointMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Endpoint.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      base44.entities.Endpoint.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["endpoints", apiId] });
       setShowEndpointForm(false);
@@ -71,14 +74,14 @@ export default function APIDetail() {
   });
 
   const deleteEndpointMutation = useMutation({
-    mutationFn: (id) => base44.entities.Endpoint.delete(id),
+    mutationFn: (id: string) => base44.entities.Endpoint.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["endpoints", apiId] });
       setSelectedEndpoint(null);
     },
   });
 
-  const handleSubmitEndpoint = (data) => {
+  const handleSubmitEndpoint = (data: any) => {
     if (editingEndpoint) {
       updateEndpointMutation.mutate({ id: editingEndpoint.id, data });
     } else {
@@ -86,13 +89,13 @@ export default function APIDetail() {
     }
   };
 
-  const handleEditEndpoint = (endpoint) => {
+  const handleEditEndpoint = (endpoint: Endpoint) => {
     setEditingEndpoint(endpoint);
     setShowEndpointForm(true);
   };
 
-  const handleDeleteEndpoint = async (id) => {
-    if (window.confirm("Tem certeza que deseja excluir este endpoint?")) {
+  const handleDeleteEndpoint = (id: string) => {
+    if (globalThis.confirm("Tem certeza que deseja excluir este endpoint?")) {
       deleteEndpointMutation.mutate(id);
     }
   };

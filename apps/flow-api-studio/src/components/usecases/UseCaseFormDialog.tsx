@@ -1,28 +1,47 @@
-import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { useState } from "react";
+import { base44 } from "../../api/base44Client";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardFooter,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
+  Input,
+  Textarea,
+  Button,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@nexus/ui";
 import { XCircle, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { createPageUrl } from "../../utils";
+import type { API } from "../../definitions";
 
-export default function UseCaseFormDialog({ apis, onSubmit, onCancel }) {
+interface UseCaseFormData {
+  name: string;
+  description?: string;
+  api_id: string;
+  flow: {
+    nodes: any[];
+    connections: any[];
+  };
+}
+
+interface UseCaseFormDialogProps {
+  apis: API[];
+  onSubmit: (data: UseCaseFormData) => Promise<void>;
+  onCancel: () => void;
+}
+
+export default function UseCaseFormDialog({
+  apis,
+  onSubmit,
+  onCancel,
+}: Readonly<UseCaseFormDialogProps>) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -31,14 +50,14 @@ export default function UseCaseFormDialog({ apis, onSubmit, onCancel }) {
     flow: { nodes: [], connections: [] },
   });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     await onSubmit(formData);
 
     const useCases = await base44.entities.UseCase.filter({
       api_id: formData.api_id,
     });
-    const newUseCase = useCases[useCases.length - 1];
+    const newUseCase = useCases.at(-1);
 
     if (newUseCase) {
       navigate(`${createPageUrl("UseCaseBuilder")}?id=${newUseCase.id}`);

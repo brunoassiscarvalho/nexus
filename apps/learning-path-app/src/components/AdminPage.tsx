@@ -2,14 +2,14 @@ import { useState } from "react";
 import { LearningStep } from "../types/learning";
 import { FlowchartEditor } from "./FlowchartEditor";
 import { NodeEditor } from "./NodeEditor";
-import { Button } from "@nexus/ui";
 import { Plus, Save, Download, Info } from "lucide-react";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  Button,
 } from "@nexus/ui";
 
 interface AdminPageProps {

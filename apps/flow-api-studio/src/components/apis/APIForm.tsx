@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,8 +11,19 @@ import {
   Button,
 } from "@nexus/ui";
 import { XCircle, Save } from "lucide-react";
+import type { API } from "../../definitions";
 
-export default function APIForm({ api, onSubmit, onCancel }) {
+interface APIFormProps {
+  api: API | null;
+  onSubmit: (data: Omit<API, "id" | "created_date">) => void;
+  onCancel: () => void;
+}
+
+export default function APIForm({
+  api,
+  onSubmit,
+  onCancel,
+}: Readonly<APIFormProps>) {
   const [formData, setFormData] = useState(
     api || {
       name: "",
@@ -22,7 +33,7 @@ export default function APIForm({ api, onSubmit, onCancel }) {
     }
   );
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     onSubmit(formData);
   };

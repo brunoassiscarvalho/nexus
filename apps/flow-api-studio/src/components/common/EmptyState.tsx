@@ -1,13 +1,19 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@nexus/ui";
 import { Database } from "lucide-react";
+
+interface EmptyStateProps {
+  title: string;
+  description: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}
 
 export default function EmptyState({
   title,
   description,
   actionLabel,
   onAction,
-}) {
+}: Readonly<EmptyStateProps>) {
   return (
     <div className="text-center py-16">
       <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">

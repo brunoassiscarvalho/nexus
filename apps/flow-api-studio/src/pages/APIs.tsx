@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { useState, useEffect } from "react";
+import { base44 } from "../api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Plus, Pencil, Trash2, ExternalLink } from "lucide-react";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { Button } from "@nexus/ui";
+import { Plus } from "lucide-react";
 
 import APIForm from "../components/apis/APIForm";
 import APICard from "../components/apis/APICard";
 import EmptyState from "../components/common/EmptyState";
+import type { API } from "../definitions";
 
 export default function APIs() {
-  const [user, setUser] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [editingAPI, setEditingAPI] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [showForm, setShowForm] = useState<boolean>(false);
+  const [editingAPI, setEditingAPI] = useState<any>(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -35,7 +34,11 @@ export default function APIs() {
     initialData: [],
   });
 
-  const createAPIMutation = useMutation({
+  const createAPIMutation = useMutation<
+    API,
+    unknown,
+    Omit<API, "id" | "created_date">
+  >({
     mutationFn: (data) => base44.entities.API.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["apis"] });
@@ -44,7 +47,11 @@ export default function APIs() {
     },
   });
 
-  const updateAPIMutation = useMutation({
+  const updateAPIMutation = useMutation<
+    API,
+    unknown,
+    { id: string; data: Partial<API> }
+  >({
     mutationFn: ({ id, data }) => base44.entities.API.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["apis"] });
@@ -53,14 +60,14 @@ export default function APIs() {
     },
   });
 
-  const deleteAPIMutation = useMutation({
-    mutationFn: (id) => base44.entities.API.delete(id),
+  const deleteAPIMutation = useMutation<void, unknown, string>({
+    mutationFn: (id: string) => base44.entities.API.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["apis"] });
     },
   });
 
-  const handleSubmit = (data) => {
+  const handleSubmit = (data: Omit<API, "id" | "created_date">) => {
     if (editingAPI) {
       updateAPIMutation.mutate({ id: editingAPI.id, data });
     } else {
@@ -68,13 +75,13 @@ export default function APIs() {
     }
   };
 
-  const handleEdit = (api) => {
+  const handleEdit = (api: any) => {
     setEditingAPI(api);
     setShowForm(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Tem certeza que deseja excluir esta API?")) {
+  const handleDelete = (id: string) => {
+    if (globalThis.confirm("Tem certeza que deseja excluir esta API?")) {
       deleteAPIMutation.mutate(id);
     }
   };
@@ -134,8 +141,8 @@ export default function APIs() {
                 ? "Crie sua primeira API para começar"
                 : "Ainda não há APIs disponíveis"
             }
-            actionLabel={isEditor ? "Criar API" : null}
-            onAction={isEditor ? () => setShowForm(true) : null}
+            actionLabel={isEditor ? "Criar API" : undefined}
+            onAction={isEditor ? () => setShowForm(true) : undefined}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

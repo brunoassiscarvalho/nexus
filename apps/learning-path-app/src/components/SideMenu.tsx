@@ -1,5 +1,5 @@
-import { Users, Settings, Sparkles, ChevronLeft } from "lucide-react";
 import { cn } from "@nexus/ui";
+import { Users, Settings, Sparkles, ChevronLeft } from "lucide-react";
 
 type Mode = "user" | "admin";
 

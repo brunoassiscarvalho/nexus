@@ -1,13 +1,17 @@
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@nexus/ui";
-import { Label } from "@nexus/ui";
-import { Input } from "@nexus/ui";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  Label,
+  Input,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@nexus/ui";
+
 import { CardType } from "./CardSidebar";
 import { Circle, Square, Diamond, Hexagon, Zap } from "lucide-react";
 
