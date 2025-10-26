@@ -3,7 +3,7 @@ import { base44 } from "../api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@nexus/ui";
 import { Database, GitBranch, Link as LinkIcon, Play } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { createPageUrl } from "../utils";
 
 export default function Dashboard() {
@@ -49,7 +49,7 @@ export default function Dashboard() {
       icon: Database,
       color: "from-blue-500 to-blue-600",
       bgColor: "bg-blue-50",
-      link: createPageUrl("APIs"),
+      link: "/apis",
     },
     {
       title: "Endpoints",
@@ -64,13 +64,13 @@ export default function Dashboard() {
       icon: GitBranch,
       color: "from-green-500 to-green-600",
       bgColor: "bg-green-50",
-      link: createPageUrl("UseCases"),
+      link: "/use-cases",
     },
   ];
 
   return (
-    <div className="p-6 lg:p-10 space-y-8">
-      <div className="space-y-2">
+    <div className="p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto space-y-8">
         <h1 className="text-4xl font-bold text-slate-900">
           Bem-vindo, {user?.full_name?.split(" ")[0] || "Usuário"}
         </h1>

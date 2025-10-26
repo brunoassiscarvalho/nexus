@@ -1,10 +1,48 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button, Badge } from "@nexus/ui";
 import { Trash2, Settings, Pencil } from "lucide-react";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { Link } from "react-router";
+import { createPageUrl, getMethodColors } from "../../utils";
 
-const FlowCanvas = React.forwardRef(
+type Endpoint = {
+  id: string;
+  name?: string;
+  method?: string;
+  path?: string;
+  request_params?: any[];
+  response_params?: any[];
+};
+
+type NodeItem = {
+  id: string;
+  endpoint_id: string;
+  position: { x: number; y: number };
+};
+
+type Connection = {
+  id: string | number;
+  from: string;
+  to: string;
+  param_mapping?: any[];
+};
+
+interface FlowCanvasProps {
+  nodes: NodeItem[];
+  connections: Connection[];
+  endpoints: Endpoint[];
+  apiId?: string;
+  onAddNode: (endpoint: Endpoint, position: { x: number; y: number }) => void;
+  onUpdateNodePosition: (
+    nodeId: string,
+    position: { x: number; y: number }
+  ) => void;
+  onDeleteNode: (nodeId: string) => void;
+  onAddConnection: (from: string, to: string) => void;
+  onSelectConnection: (conn: Connection) => void;
+  onDeleteConnection: (id: string | number) => void;
+}
+
+const FlowCanvas = React.forwardRef<HTMLDivElement, FlowCanvasProps>(
   (
     {
       nodes,
@@ -20,15 +58,19 @@ const FlowCanvas = React.forwardRef(
     },
     ref
   ) => {
-    const canvasRef = useRef(null);
-    const [draggingNode, setDraggingNode] = useState(null);
-    const [connectingFrom, setConnectingFrom] = useState(null);
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    const [offset, setOffset] = useState({ x: 0, y: 0 });
-    const [hoveredNode, setHoveredNode] = useState(null);
+    const canvasRef = useRef<HTMLDivElement | null>(null);
+    const [draggingNode, setDraggingNode] = useState<any>(null);
+    const [connectingFrom, setConnectingFrom] = useState<any>(null);
+    const [mousePos, setMousePos] = useState<any>({ x: 0, y: 0 });
+    const [offset, setOffset] = useState<any>({ x: 0, y: 0 });
+    const [hoveredNode, setHoveredNode] = useState<any>(null);
 
     useEffect(() => {
-      const handleDragOver = (e) => {
+      const handleDragOver = (e: {
+        preventDefault: () => void;
+        clientX: number;
+        clientY: number;
+      }) => {
         e.preventDefault();
         const rect = canvasRef.current?.getBoundingClientRect();
         if (rect) {
@@ -36,11 +78,13 @@ const FlowCanvas = React.forwardRef(
         }
       };
 
-      const handleDrop = (e) => {
+      const handleDrop = (e: any) => {
         e.preventDefault();
         const endpointId = e.dataTransfer.getData("endpointId");
         if (endpointId) {
-          const endpoint = endpoints.find((ep) => ep.id === endpointId);
+          const endpoint = endpoints.find(
+            (ep: { id: any }) => ep.id === endpointId
+          );
           if (endpoint) {
             const rect = canvasRef.current?.getBoundingClientRect();
             if (rect) {
@@ -67,10 +111,14 @@ const FlowCanvas = React.forwardRef(
       };
     }, [endpoints, onAddNode]);
 
-    const handleMouseDown = (e, node) => {
+    const handleMouseDown = (
+      e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+      node: { id: any; position: { x: number; y: number } }
+    ) => {
+      const target = e.target as HTMLElement | null;
       if (
-        e.target.closest(".node-action") ||
-        e.target.closest(".connection-trigger")
+        target?.closest(".node-action") ||
+        target?.closest(".connection-trigger")
       ) {
         return;
       }
@@ -86,7 +134,11 @@ const FlowCanvas = React.forwardRef(
       }
     };
 
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: {
+      preventDefault: () => void;
+      clientX: number;
+      clientY: number;
+    }) => {
       if (draggingNode) {
         e.preventDefault();
         const rect = canvasRef.current?.getBoundingClientRect();
@@ -114,7 +166,10 @@ const FlowCanvas = React.forwardRef(
       }
     };
 
-    const startConnection = (e, nodeId) => {
+    const startConnection = (
+      e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+      nodeId: any
+    ) => {
       e.preventDefault();
       e.stopPropagation();
       setConnectingFrom(nodeId);
@@ -125,13 +180,17 @@ const FlowCanvas = React.forwardRef(
       }
     };
 
-    const completeConnection = (e, toNodeId) => {
+    const completeConnection = (
+      e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+      toNodeId: any
+    ) => {
       e.preventDefault();
       e.stopPropagation();
 
       if (connectingFrom && connectingFrom !== toNodeId) {
         const existingConnection = connections.find(
-          (conn) => conn.from === connectingFrom && conn.to === toNodeId
+          (conn: { from: any; to: any }) =>
+            conn.from === connectingFrom && conn.to === toNodeId
         );
         if (!existingConnection) {
           onAddConnection(connectingFrom, toNodeId);
@@ -141,21 +200,18 @@ const FlowCanvas = React.forwardRef(
       setHoveredNode(null);
     };
 
-    const getEndpoint = (endpointId) => {
-      return endpoints.find((ep) => ep.id === endpointId);
+    const getEndpoint = (endpointId: any) => {
+      return endpoints.find((ep: { id: any }) => ep.id === endpointId);
     };
 
-    const methodColors = {
-      GET: "bg-green-500",
-      POST: "bg-blue-500",
-      PUT: "bg-orange-500",
-      PATCH: "bg-purple-500",
-      DELETE: "bg-red-500",
-    };
-
-    const getConnectionMidpoint = (conn) => {
-      const fromNode = nodes.find((n) => n.id === conn.from);
-      const toNode = nodes.find((n) => n.id === conn.to);
+    const getConnectionMidpoint = (conn: {
+      from: any;
+      to: any;
+      param_mapping?: string | any[];
+      id?: any;
+    }) => {
+      const fromNode = nodes.find((n: { id: any }) => n.id === conn.from);
+      const toNode = nodes.find((n: { id: any }) => n.id === conn.to);
       if (!fromNode || !toNode) return null;
 
       const x1 = fromNode.position.x + 125;
@@ -173,8 +229,8 @@ const FlowCanvas = React.forwardRef(
       };
     };
 
-    const getNodeCenter = (nodeId) => {
-      const node = nodes.find((n) => n.id === nodeId);
+    const getNodeCenter = (nodeId: any) => {
+      const node = nodes.find((n: { id: any }) => n.id === nodeId);
       if (!node) return { x: 0, y: 0 };
       return {
         x: node.position.x + 125,
@@ -224,7 +280,7 @@ const FlowCanvas = React.forwardRef(
             </marker>
           </defs>
 
-          {connections.map((conn) => {
+          {connections.map((conn: Connection) => {
             const midpoint = getConnectionMidpoint(conn);
             if (!midpoint) return null;
 
@@ -269,12 +325,12 @@ const FlowCanvas = React.forwardRef(
           )}
         </svg>
 
-        {connections.map((conn) => {
+        {connections.map((conn: Connection) => {
           const midpoint = getConnectionMidpoint(conn);
           if (!midpoint) return null;
 
-          const fromNode = nodes.find((n) => n.id === conn.from);
-          const toNode = nodes.find((n) => n.id === conn.to);
+          const fromNode = nodes.find((n: { id: any }) => n.id === conn.from);
+          const toNode = nodes.find((n: { id: any }) => n.id === conn.to);
           const fromEndpoint = getEndpoint(fromNode?.endpoint_id);
           const toEndpoint = getEndpoint(toNode?.endpoint_id);
 
@@ -343,7 +399,7 @@ const FlowCanvas = React.forwardRef(
           </div>
         )}
 
-        {nodes.map((node) => {
+        {nodes.map((node: NodeItem) => {
           const endpoint = getEndpoint(node.endpoint_id);
           if (!endpoint) return null;
 
@@ -387,7 +443,7 @@ const FlowCanvas = React.forwardRef(
             >
               <div className="flex items-start justify-between mb-3">
                 <Badge
-                  className={`${methodColors[endpoint.method]} text-white text-xs font-mono`}
+                  className={`${getMethodColors(endpoint.method || "", "solid")} text-white text-xs font-mono`}
                 >
                   {endpoint.method}
                 </Badge>

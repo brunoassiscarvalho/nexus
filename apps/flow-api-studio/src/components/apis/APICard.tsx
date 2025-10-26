@@ -1,7 +1,7 @@
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@nexus/ui";
 import { Pencil, Trash2, ExternalLink } from "lucide-react";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { Link } from "react-router";
+import { createPageUrl } from "../../utils";
 interface APICardProps {
   api: {
     id: string;

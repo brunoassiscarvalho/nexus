@@ -12,6 +12,7 @@ import {
 } from "@nexus/ui";
 
 import { X, Plus, Trash2, ArrowRight, CheckCircle } from "lucide-react";
+import { getMethodColors } from "../../utils";
 
 type Param = {
   name: string;
@@ -92,14 +93,6 @@ export default function ConnectionEditor({
     onUpdate(connection.id, newMappings);
   };
 
-  const methodColors = {
-    GET: "bg-green-100 text-green-700 border-green-200",
-    POST: "bg-blue-100 text-blue-700 border-blue-200",
-    PUT: "bg-orange-100 text-orange-700 border-orange-200",
-    PATCH: "bg-purple-100 text-purple-700 border-purple-200",
-    DELETE: "bg-red-100 text-red-700 border-red-200",
-  };
-
   return (
     <div className="h-full overflow-y-auto">
       <div className="sticky top-0 bg-white border-b border-slate-200 p-6 z-10">
@@ -135,7 +128,7 @@ export default function ConnectionEditor({
             <div className="ml-8 space-y-2">
               <div className="flex items-center gap-2">
                 <Badge
-                  className={`${(fromEndpoint?.method && methodColors[fromEndpoint.method as keyof typeof methodColors]) || ""} border font-mono text-xs`}
+                  className={`${(fromEndpoint?.method && getMethodColors(fromEndpoint.method)) || ""} border font-mono text-xs`}
                 >
                   {fromEndpoint?.method}
                 </Badge>
@@ -187,7 +180,7 @@ export default function ConnectionEditor({
             <div className="ml-8 space-y-2">
               <div className="flex items-center gap-2">
                 <Badge
-                  className={`${(toEndpoint?.method && methodColors[toEndpoint.method as keyof typeof methodColors]) || ""} border font-mono text-xs`}
+                  className={`${(toEndpoint?.method && getMethodColors(toEndpoint.method)) || ""} border font-mono text-xs`}
                 >
                   {toEndpoint?.method}
                 </Badge>

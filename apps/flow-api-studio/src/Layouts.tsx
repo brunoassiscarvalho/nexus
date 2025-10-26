@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { base44 } from "@/api/base44Client";
+import { Link, Outlet, useLocation } from "react-router";
+import { createPageUrl } from "./utils";
+import { base44 } from "./api/base44Client";
 import {
   LayoutDashboard,
   Database,
@@ -33,11 +33,7 @@ import {
   DropdownMenuSeparator,
 } from "@nexus/ui";
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
-
-export default function Layout({ children }: Readonly<LayoutProps>) {
+export default function Layout() {
   const location = useLocation();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -61,17 +57,17 @@ export default function Layout({ children }: Readonly<LayoutProps>) {
   const editorNavigation = [
     {
       title: "Dashboard",
-      url: createPageUrl("Dashboard"),
+      url: "dashboard",
       icon: LayoutDashboard,
     },
     {
       title: "APIs",
-      url: createPageUrl("APIs"),
+      url: "apis",
       icon: Database,
     },
     {
       title: "Use Cases",
-      url: createPageUrl("UseCases"),
+      url: "use-cases",
       icon: GitBranch,
     },
   ];
@@ -79,17 +75,17 @@ export default function Layout({ children }: Readonly<LayoutProps>) {
   const visualizadorNavigation = [
     {
       title: "Dashboard",
-      url: createPageUrl("Dashboard"),
+      url: "dashboard",
       icon: LayoutDashboard,
     },
     {
       title: "APIs",
-      url: createPageUrl("APIs"),
+      url: "apis",
       icon: Database,
     },
     {
       title: "Use Cases",
-      url: createPageUrl("UseCases"),
+      url: "use-cases",
       icon: Play,
     },
   ];
@@ -222,7 +218,9 @@ export default function Layout({ children }: Readonly<LayoutProps>) {
             </div>
           </header>
 
-          <div className="flex-1 overflow-auto">{children}</div>
+          <div className="flex-1 overflow-auto">
+            <Outlet />
+          </div>
         </main>
       </div>
     </SidebarProvider>

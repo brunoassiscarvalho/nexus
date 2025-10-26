@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@nexus/ui";
 import { XCircle, Save } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { createPageUrl } from "../../utils";
 import type { API } from "../../definitions";
 

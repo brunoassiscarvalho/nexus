@@ -1,4 +1,4 @@
-import { ErrorResponse } from "react-router-dom";
+import { ErrorResponse } from "react-router";
 import { BaseEntity, PaginatedResponse } from "../../../../definitions/types";
 
 // Extending the base types for API-specific use

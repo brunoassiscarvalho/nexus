@@ -1,13 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { useState, useEffect, useRef } from "react";
+import { base44 } from "../api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
- import { Button } from "@nexus/ui";,
+import { Button } from "@nexus/ui";
 import { ArrowLeft, Save } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { useNavigate } from "react-router";
+import { createPageUrl } from "../utils";
 
 import FlowCanvas from "../components/builder/FlowCanvas";
-import EndpointPalette from "../components/builder/EndpointPalette";
+import EndpointPalette from "../components/builder/EndpontPallet";
 import ConnectionEditor from "../components/builder/ConnectionEditor";
 
 export default function UseCaseBuilder() {
@@ -15,13 +15,13 @@ export default function UseCaseBuilder() {
   const queryClient = useQueryClient();
   const canvasRef = useRef(null);
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const useCaseId = urlParams.get("id");
+  const urlParams = new URLSearchParams(globalThis.location.search);
+  const useCaseId = urlParams.get("id") || "";
 
-  const [nodes, setNodes] = useState([]);
-  const [connections, setConnections] = useState([]);
-  const [selectedConnection, setSelectedConnection] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [nodes, setNodes] = useState<any[]>([]);
+  const [connections, setConnections] = useState<any[]>([]);
+  const [selectedConnection, setSelectedConnection] = useState<any>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
   const { data: useCase, isLoading } = useQuery({
     queryKey: ["usecase", useCaseId],
@@ -34,7 +34,7 @@ export default function UseCaseBuilder() {
 
   const { data: endpoints } = useQuery({
     queryKey: ["endpoints", useCase?.api_id],
-    queryFn: () => base44.entities.Endpoint.filter({ api_id: useCase.api_id }),
+    queryFn: () => base44.entities.Endpoint.filter({ api_id: useCase?.api_id }),
     initialData: [],
     enabled: !!useCase?.api_id,
   });
@@ -42,12 +42,17 @@ export default function UseCaseBuilder() {
   useEffect(() => {
     if (useCase?.flow) {
       setNodes(useCase.flow.nodes || []);
-      setConnections(useCase.flow.connections || []);
+      setConnections(useCase.flow?.connections || []);
     }
   }, [useCase]);
 
-  const updateUseCaseMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.UseCase.update(id, data),
+  const updateUseCaseMutation = useMutation<
+    any,
+    unknown,
+    { id: string | null; data: any }
+  >({
+    mutationFn: ({ id, data }: { id: string | null; data: any }) =>
+      base44.entities.UseCase.update(id!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["usecase", useCaseId] });
     },
@@ -61,7 +66,7 @@ export default function UseCaseBuilder() {
     });
   };
 
-  const handleAddNode = (endpoint, position) => {
+  const handleAddNode = (endpoint: { id: any }, position: any) => {
     const newNode = {
       id: `node-${Date.now()}`,
       endpoint_id: endpoint.id,
@@ -70,20 +75,20 @@ export default function UseCaseBuilder() {
     setNodes([...nodes, newNode]);
   };
 
-  const handleUpdateNodePosition = (nodeId, position) => {
+  const handleUpdateNodePosition = (nodeId: any, position: any) => {
     setNodes(
       nodes.map((node) => (node.id === nodeId ? { ...node, position } : node))
     );
   };
 
-  const handleDeleteNode = (nodeId) => {
+  const handleDeleteNode = (nodeId: any) => {
     setNodes(nodes.filter((node) => node.id !== nodeId));
     setConnections(
       connections.filter((conn) => conn.from !== nodeId && conn.to !== nodeId)
     );
   };
 
-  const handleAddConnection = (from, to) => {
+  const handleAddConnection = (from: any, to: any) => {
     const newConnection = {
       id: `conn-${Date.now()}`,
       from,
@@ -94,7 +99,7 @@ export default function UseCaseBuilder() {
     setSelectedConnection(newConnection);
   };
 
-  const handleUpdateConnection = (connectionId, paramMapping) => {
+  const handleUpdateConnection = (connectionId: any, paramMapping: any) => {
     setConnections(
       connections.map((conn) =>
         conn.id === connectionId
@@ -104,7 +109,7 @@ export default function UseCaseBuilder() {
     );
   };
 
-  const handleDeleteConnection = (connectionId) => {
+  const handleDeleteConnection = (connectionId: any) => {
     setConnections(connections.filter((conn) => conn.id !== connectionId));
     setSelectedConnection(null);
   };
@@ -153,7 +158,6 @@ export default function UseCaseBuilder() {
 
         <div className="flex-1 relative">
           <FlowCanvas
-            ref={canvasRef}
             nodes={nodes}
             connections={connections}
             endpoints={endpoints}

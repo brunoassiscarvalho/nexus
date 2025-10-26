@@ -3,7 +3,7 @@ import { base44 } from "../api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from "@nexus/ui";
 import { ArrowLeft, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { createPageUrl } from "../utils";
 import type { User, Endpoint } from "../definitions";
 

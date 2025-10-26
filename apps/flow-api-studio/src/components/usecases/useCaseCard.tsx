@@ -1,10 +1,22 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@nexus/ui"; { Button }
+import { Card, CardContent, Button, CardHeader, CardTitle } from "@nexus/ui";
 import { Play, Pencil, Trash2, GitBranch } from "lucide-react";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { Link } from "react-router";
+import { createPageUrl } from "../../utils";
+import { UseCase } from "../../definitions";
 
-export default function UseCaseCard({ useCase, apis, isEditor, onDelete }) {
+interface UseCaseCardProps {
+  useCase: UseCase;
+  apis: { id: string; name: string }[];
+  isEditor: boolean;
+  onDelete: (useCaseId: string) => void;
+}
+
+export default function UseCaseCard({
+  useCase,
+  apis,
+  isEditor,
+  onDelete,
+}: UseCaseCardProps) {
   const api = apis.find((a) => a.id === useCase.api_id);
   const nodeCount = useCase.flow?.nodes?.length || 0;
 

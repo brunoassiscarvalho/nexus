@@ -73,6 +73,7 @@ const mockUseCases: UseCase[] = [
         },
       ],
       edges: [],
+      connections: [],
     },
   },
 ];

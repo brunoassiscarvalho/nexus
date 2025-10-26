@@ -1,25 +1,40 @@
-import React, { useState } from "react";
- {
+import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardFooter,
-},
-import { Input } from "@nexus/ui"; { Textarea }
-import { Button } from "@nexus/ui"; { Label }
- {
+  Button,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-},
-import { XCircle, Save, Plus, Trash2 } from "lucide-react";
+  Textarea,
+  Label,
+  Input,
+} from "@nexus/ui";
 
-export default function EndpointForm({ endpoint, onSubmit, onCancel }) {
-  const [formData, setFormData] = useState(
-    endpoint || {
+import { XCircle, Save, Plus, Trash2 } from "lucide-react";
+import { Endpoint } from "../../definitions";
+import { useState } from "react";
+
+interface EndpointFormProps {
+  endpoint: Endpoint | null;
+  onSubmit: (data: Omit<Endpoint, "id" | "created_date">) => void;
+  onCancel: () => void;
+}
+
+export default function EndpointForm({
+  endpoint,
+  onSubmit,
+  onCancel,
+}: EndpointFormProps) {
+  const [formData, setFormData] = useState<
+    Omit<Endpoint, "id" | "created_date">
+  >(
+    (endpoint as Omit<Endpoint, "id" | "created_date">) || {
+      api_id: "",
       name: "",
       method: "GET",
       path: "",
@@ -29,7 +44,7 @@ export default function EndpointForm({ endpoint, onSubmit, onCancel }) {
     }
   );
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     onSubmit(formData);
   };
@@ -54,29 +69,33 @@ export default function EndpointForm({ endpoint, onSubmit, onCancel }) {
     });
   };
 
-  const updateRequestParam = (index, field, value) => {
+  const updateRequestParam = (index: number, field: string, value: string) => {
     const newParams = [...(formData.request_params || [])];
     newParams[index] = { ...newParams[index], [field]: value };
     setFormData({ ...formData, request_params: newParams });
   };
 
-  const updateResponseParam = (index, field, value) => {
+  const updateResponseParam = (index: number, field: string, value: string) => {
     const newParams = [...(formData.response_params || [])];
     newParams[index] = { ...newParams[index], [field]: value };
     setFormData({ ...formData, response_params: newParams });
   };
 
-  const removeRequestParam = (index) => {
+  const removeRequestParam = (index: any) => {
     setFormData({
       ...formData,
-      request_params: formData.request_params.filter((_, i) => i !== index),
+      request_params: (formData.request_params || []).filter(
+        (_, i) => i !== index
+      ),
     });
   };
 
-  const removeResponseParam = (index) => {
+  const removeResponseParam = (index: any) => {
     setFormData({
       ...formData,
-      response_params: formData.response_params.filter((_, i) => i !== index),
+      response_params: (formData.response_params || []).filter(
+        (_, i) => i !== index
+      ),
     });
   };
 

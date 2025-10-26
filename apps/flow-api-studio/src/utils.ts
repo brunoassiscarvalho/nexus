@@ -49,3 +49,38 @@ export function debounce<T extends (...args: any[]) => any>(
 export function generateId(): string {
   return Math.random().toString(36).substr(2, 9);
 }
+
+/**
+ * Get color classes for HTTP methods
+ * @param method - The HTTP method (GET, POST, etc.)
+ * @param style - The style variant ('light' for badges with borders, 'solid' for solid backgrounds)
+ * @returns CSS class string for the method color
+ */
+export function getMethodColors(
+  method: string,
+  style: "light" | "solid" = "light"
+): string {
+  const colors = {
+    light: {
+      GET: "bg-green-100 text-green-700 border-green-200",
+      POST: "bg-blue-100 text-blue-700 border-blue-200",
+      PUT: "bg-orange-100 text-orange-700 border-orange-200",
+      PATCH: "bg-purple-100 text-purple-700 border-purple-200",
+      DELETE: "bg-red-100 text-red-700 border-red-200",
+    },
+    solid: {
+      GET: "bg-green-500",
+      POST: "bg-blue-500",
+      PUT: "bg-orange-500",
+      PATCH: "bg-purple-500",
+      DELETE: "bg-red-500",
+    },
+  };
+
+  return (
+    colors[style][method as keyof (typeof colors)[typeof style]] ||
+    (style === "light"
+      ? "bg-slate-100 text-slate-700 border-slate-200"
+      : "bg-slate-500")
+  );
+}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "../api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import {
   Button,
@@ -10,13 +10,13 @@ import {
   CardTitle,
 } from "@nexus/ui";
 import { ArrowLeft, Play, CheckCircle, XCircle, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { useNavigate } from "react-router";
+import { createPageUrl } from "../utils";
 
 export default function UseCaseExecutor() {
   const navigate = useNavigate();
-  const urlParams = new URLSearchParams(window.location.search);
-  const useCaseId = urlParams.get("id");
+  const urlParams = new URLSearchParams(globalThis.location.search);
+  const useCaseId = urlParams.get("id") || "";
 
   type ExecutionLogEntry = {
     step: number;
@@ -41,12 +41,12 @@ export default function UseCaseExecutor() {
 
   const { data: endpoints } = useQuery({
     queryKey: ["endpoints", useCase?.api_id],
-    queryFn: () => base44.entities.Endpoint.filter({ api_id: useCase.api_id }),
+    queryFn: () => base44.entities.Endpoint.filter({ api_id: useCase?.api_id }),
     initialData: [],
     enabled: !!useCase?.api_id,
   });
 
-  const getEndpointById = (endpointId) => {
+  const getEndpointById = (endpointId: string) => {
     return endpoints.find((ep) => ep.id === endpointId);
   };
 
@@ -84,33 +84,37 @@ export default function UseCaseExecutor() {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       const incomingConnection = connections.find(
-        (conn) => conn.to === node.id
+        (conn: { to: any }) => conn.to === node.id
       );
-      let params = {};
+      let params: Record<string, any> = {};
 
       if (incomingConnection && results[incomingConnection.from]) {
         const mapping = incomingConnection.param_mapping || [];
-        mapping.forEach((map) => {
-          params[map.target_param] =
-            results[incomingConnection.from][map.source_param];
+        mapping.forEach((map: any) => {
+          params[String(map.target_param)] =
+            results[incomingConnection.from][String(map.source_param)];
         });
       }
 
       const mockResponse = {
         status: "success",
         data:
-          endpoint?.response_params?.reduce((acc, param) => {
-            acc[param.name] = `mock_${param.name}_value`;
-            return acc;
-          }, {}) || {},
+          endpoint?.response_params?.reduce(
+            (acc: Record<string, any>, param: any) => {
+              acc[param.name] = `mock_${param.name}_value`;
+              return acc;
+            },
+            {} as Record<string, any>
+          ) || {},
       };
 
       results[node.id] = mockResponse.data;
 
       setExecutionLog((prev) => {
         const newLog = [...prev];
+        const last = newLog[newLog.length - 1];
         newLog[newLog.length - 1] = {
-          ...newLog[newLog.length - 1],
+          ...(last ?? {}),
           status: "success",
           message: `✓ ${endpoint?.name} executado com sucesso`,
           response: mockResponse.data,
@@ -130,7 +134,6 @@ export default function UseCaseExecutor() {
   }
 
   const totalSteps = (useCase as any)?.flow?.nodes?.length || 0;
-  const progress = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
   const progress = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
 
   return (

@@ -64,6 +64,7 @@ export interface UseCase {
  * Flow definition for use cases
  */
 export interface FlowDefinition {
+  connections: never[];
   nodes: FlowNode[];
   edges: FlowEdge[];
 }

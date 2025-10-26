@@ -10,7 +10,7 @@ import {
   Progress,
 } from "@nexus/ui";
 import { ArrowLeft, Play, CheckCircle, XCircle, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { createPageUrl } from "../utils";
 
 export default function UseCaseExecutor() {
