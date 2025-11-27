@@ -5,7 +5,9 @@ import { CardType } from './CardSidebar';
 import { CanvasControls } from './CanvasControls';
 import { CardContextMenu } from './CardContextMenu';
 import { NodePropertiesDrawer } from './NodePropertiesDrawer';
-import { toast } from 'sonner';
+import { Minimap } from './Minimap';
+import { SaveDesignDialog } from './SaveDesignDialog';
+import { toast } from 'sonner@2.0.3';
 
 interface Card {
   id: string;
@@ -13,6 +15,7 @@ interface Card {
   x: number;
   y: number;
   label: string;
+  description?: string;
 }
 
 interface Connection {
@@ -43,6 +46,7 @@ export function FlowCanvas() {
   const [tempConnection, setTempConnection] = useState<TempConnection | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   
   // Zoom and pan state
   const [zoom, setZoom] = useState(1);
@@ -50,9 +54,12 @@ export function FlowCanvas() {
   const [panY, setPanY] = useState(0);
   const [isPanning, setIsPanning] = useState(false);
   const [hoveredConnection, setHoveredConnection] = useState<string | null>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const connectionCompletedRef = useRef(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const currentDesignIdRef = useRef<string | null>(null);
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'CARD',
@@ -193,6 +200,12 @@ export function FlowCanvas() {
     setSelectedCardId(id);
   };
 
+  const handleCardDoubleClick = (id: string) => {
+    // This will be handled by the parent component (App.tsx)
+    const event = new CustomEvent('openComponentDetail', { detail: { id } });
+    window.dispatchEvent(event);
+  };
+
   const handleUpdateCard = (id: string, updates: Partial<Card>) => {
     setCards((prev) =>
       prev.map((card) => (card.id === id ? { ...card, ...updates } : card))
@@ -318,9 +331,93 @@ export function FlowCanvas() {
     }
   };
 
+  const handleSave = () => {
+    // Check if this is an existing design
+    if (currentDesignIdRef.current) {
+      // Auto-save existing design without asking for name
+      try {
+        const saved = localStorage.getItem('systemDesigns');
+        const designs = saved ? JSON.parse(saved) : [];
+        
+        const existingIndex = designs.findIndex((d: any) => d.id === currentDesignIdRef.current);
+        
+        if (existingIndex >= 0) {
+          const existingDesign = designs[existingIndex];
+          designs[existingIndex] = {
+            ...existingDesign,
+            updatedAt: Date.now(),
+            nodesCount: cards.length,
+            connectionsCount: connections.length,
+            data: {
+              cards,
+              connections,
+            },
+          };
+          
+          localStorage.setItem('systemDesigns', JSON.stringify(designs));
+          toast.success('Design updated successfully');
+        } else {
+          // Design ID exists but not found in storage, treat as new
+          setSaveDialogOpen(true);
+        }
+      } catch (error) {
+        toast.error('Failed to update design');
+      }
+    } else {
+      // New design, ask for name
+      setSaveDialogOpen(true);
+    }
+  };
+
+  const handleSaveDesign = (name: string) => {
+    try {
+      const saved = localStorage.getItem('systemDesigns');
+      const designs = saved ? JSON.parse(saved) : [];
+      
+      const designId = currentDesignIdRef.current || `design-${Date.now()}`;
+      const existingIndex = designs.findIndex((d: any) => d.id === designId);
+      
+      const designData = {
+        id: designId,
+        name,
+        createdAt: existingIndex >= 0 ? designs[existingIndex].createdAt : Date.now(),
+        updatedAt: Date.now(),
+        nodesCount: cards.length,
+        connectionsCount: connections.length,
+        data: {
+          cards,
+          connections,
+        },
+      };
+      
+      console.log('Saving design:', designData);
+      
+      if (existingIndex >= 0) {
+        designs[existingIndex] = designData;
+        toast.success('Design updated successfully');
+      } else {
+        designs.push(designData);
+        toast.success('Design saved successfully');
+      }
+      
+      localStorage.setItem('systemDesigns', JSON.stringify(designs));
+      currentDesignIdRef.current = designId;
+      
+      console.log('Saved designs in localStorage:', designs);
+    } catch (error) {
+      console.error('Save error:', error);
+      toast.error('Failed to save design');
+    }
+  };
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Save shortcut
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
       // Zoom shortcuts
       if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault();
@@ -340,12 +437,77 @@ export function FlowCanvas() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Emit components update event whenever cards change
+  useEffect(() => {
+    const event = new CustomEvent('componentsUpdated', { 
+      detail: { components: cards } 
+    });
+    window.dispatchEvent(event);
+  }, [cards]);
+
+  // Listen for component update/delete events from App
+  useEffect(() => {
+    const handleUpdateComponent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ id: string; updates: Partial<Card> }>;
+      handleUpdateCard(customEvent.detail.id, customEvent.detail.updates);
+    };
+
+    const handleDeleteComponent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ id: string }>;
+      handleDeleteCard(customEvent.detail.id);
+    };
+
+    const handleClearCanvas = () => {
+      setCards([]);
+      setConnections([]);
+      currentDesignIdRef.current = null;
+    };
+
+    const handleLoadDesign = (e: Event) => {
+      const customEvent = e as CustomEvent<{ id: string; data: { cards: Card[]; connections: Connection[] } }>;
+      console.log('Loading design:', customEvent.detail);
+      setCards(customEvent.detail.data.cards || []);
+      setConnections(customEvent.detail.data.connections || []);
+      currentDesignIdRef.current = customEvent.detail.id;
+      toast.success('Design loaded successfully');
+    };
+
+    window.addEventListener('updateComponent', handleUpdateComponent);
+    window.addEventListener('deleteComponent', handleDeleteComponent);
+    window.addEventListener('clearCanvas', handleClearCanvas);
+    window.addEventListener('loadDesign', handleLoadDesign);
+
+    return () => {
+      window.removeEventListener('updateComponent', handleUpdateComponent);
+      window.removeEventListener('deleteComponent', handleDeleteComponent);
+      window.removeEventListener('clearCanvas', handleClearCanvas);
+      window.removeEventListener('loadDesign', handleLoadDesign);
+    };
+  }, [cards]);
+
+  // Track canvas size for minimap
+  useEffect(() => {
+    const updateCanvasSize = () => {
+      if (canvasRef.current) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        setCanvasSize({ width: rect.width, height: rect.height });
+      }
+    };
+
+    updateCanvasSize();
+    window.addEventListener('resize', updateCanvasSize);
+    return () => window.removeEventListener('resize', updateCanvasSize);
+  }, []);
+
   return (
     <div className="relative flex-1 overflow-hidden">
       <div
-        ref={drop}
+        ref={(node) => {
+          drop(node);
+          if (node) canvasRef.current = node;
+        }}
         id="flow-canvas"
-        className={`relative size-full bg-background ${
+        className={`relative size-full bg-background ${ 
           isOver ? 'bg-accent' : ''
         } ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
         onWheel={handleWheel}
@@ -474,6 +636,7 @@ export function FlowCanvas() {
               onDelete={handleDeleteCard}
               onLabelChange={handleLabelChange}
               onSelect={handleSelectCard}
+              onDoubleClick={handleCardDoubleClick}
             />
           ))}
         </div>
@@ -482,8 +645,8 @@ export function FlowCanvas() {
         {cards.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center text-muted-foreground">
-              <p>Drag cards from the sidebar to get started</p>
-              <p className="mt-2">Shift + Drag to pan • Ctrl + Scroll to zoom</p>
+              <p>Drag components from the sidebar to get started</p>
+              <p className="mt-2">Click and drag to pan • Ctrl + Scroll to zoom</p>
             </div>
           </div>
         )}
@@ -497,6 +660,18 @@ export function FlowCanvas() {
         onResetView={handleResetView}
         onExport={handleExport}
         onImport={handleImport}
+        onSave={handleSave}
+      />
+
+      {/* Minimap */}
+      <Minimap
+        cards={cards}
+        connections={connections}
+        zoom={zoom}
+        panX={panX}
+        panY={panY}
+        canvasWidth={canvasSize.width}
+        canvasHeight={canvasSize.height}
       />
 
       {/* Context menu */}
@@ -524,6 +699,15 @@ export function FlowCanvas() {
         open={selectedCardId !== null}
         onClose={() => setSelectedCardId(null)}
         onUpdateCard={handleUpdateCard}
+        onDeleteCard={handleDeleteCard}
+        onNavigateToDetail={handleCardDoubleClick}
+      />
+
+      {/* Save Design Dialog */}
+      <SaveDesignDialog
+        open={saveDialogOpen}
+        onOpenChange={setSaveDialogOpen}
+        onSave={handleSaveDesign}
       />
     </div>
   );

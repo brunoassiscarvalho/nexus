@@ -1,5 +1,6 @@
 import { Trophy, Award, Target } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, Progress } from "@nexus/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Progress } from "./ui/progress";
 
 interface SkillProgressProps {
   totalSkillPoints: number;
@@ -31,7 +32,7 @@ export function SkillProgress({
               <div className="text-sm text-muted-foreground">Skill Points</div>
             </div>
           </div>
-
+          
           <div className="flex flex-col items-center p-4 bg-green-50 rounded-lg border-2 border-green-200">
             <Target className="w-8 h-8 text-green-600 mb-2" />
             <div className="text-center">
@@ -39,18 +40,16 @@ export function SkillProgress({
               <div className="text-sm text-muted-foreground">Completed</div>
             </div>
           </div>
-
+          
           <div className="flex flex-col items-center p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
             <Trophy className="w-8 h-8 text-blue-600 mb-2" />
             <div className="text-center">
-              <div className="text-2xl text-blue-700">
-                {totalSteps - completedSteps}
-              </div>
+              <div className="text-2xl text-blue-700">{totalSteps - completedSteps}</div>
               <div className="text-sm text-muted-foreground">Remaining</div>
             </div>
           </div>
         </div>
-
+        
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>Overall Progress</span>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Circle, Square, Diamond, Hexagon, Zap, Trash2 } from 'lucide-react';
+import { Server, Database, Cloud, Globe, Layers, Zap, HardDrive, Network, Trash2 } from 'lucide-react';
 import { CardType } from './CardSidebar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface FlowCardProps {
   id: string;
@@ -18,37 +19,56 @@ interface FlowCardProps {
   onDelete: (id: string) => void;
   onLabelChange: (id: string, label: string) => void;
   onSelect: (id: string) => void;
+  onDoubleClick: (id: string) => void;
 }
 
 const cardConfig: Record<CardType, { color: string; bgColor: string; icon: React.ReactNode; shape: string }> = {
-  start: { 
-    color: 'border-green-500 bg-green-50', 
-    bgColor: 'bg-green-500',
-    icon: <Circle className="w-4 h-4" />,
-    shape: 'rounded-full'
-  },
-  process: { 
+  api: { 
     color: 'border-blue-500 bg-blue-50', 
     bgColor: 'bg-blue-500',
-    icon: <Square className="w-4 h-4" />,
+    icon: <Globe className="w-6 h-6" />,
     shape: 'rounded-lg'
   },
-  decision: { 
-    color: 'border-yellow-500 bg-yellow-50', 
-    bgColor: 'bg-yellow-500',
-    icon: <Diamond className="w-4 h-4" />,
+  database: { 
+    color: 'border-green-500 bg-green-50', 
+    bgColor: 'bg-green-500',
+    icon: <Database className="w-6 h-6" />,
     shape: 'rounded-lg'
   },
-  input: { 
+  service: { 
     color: 'border-purple-500 bg-purple-50', 
     bgColor: 'bg-purple-500',
-    icon: <Hexagon className="w-4 h-4" />,
+    icon: <Server className="w-6 h-6" />,
     shape: 'rounded-lg'
   },
-  action: { 
+  frontend: { 
+    color: 'border-cyan-500 bg-cyan-50', 
+    bgColor: 'bg-cyan-500',
+    icon: <Cloud className="w-6 h-6" />,
+    shape: 'rounded-lg'
+  },
+  backend: { 
+    color: 'border-indigo-500 bg-indigo-50', 
+    bgColor: 'bg-indigo-500',
+    icon: <Layers className="w-6 h-6" />,
+    shape: 'rounded-lg'
+  },
+  queue: { 
     color: 'border-orange-500 bg-orange-50', 
     bgColor: 'bg-orange-500',
-    icon: <Zap className="w-4 h-4" />,
+    icon: <Zap className="w-6 h-6" />,
+    shape: 'rounded-lg'
+  },
+  cache: { 
+    color: 'border-red-500 bg-red-50', 
+    bgColor: 'bg-red-500',
+    icon: <HardDrive className="w-6 h-6" />,
+    shape: 'rounded-lg'
+  },
+  loadbalancer: { 
+    color: 'border-yellow-500 bg-yellow-50', 
+    bgColor: 'bg-yellow-500',
+    icon: <Network className="w-6 h-6" />,
     shape: 'rounded-lg'
   },
 };
@@ -69,6 +89,7 @@ export function FlowCard({
   onDelete,
   onLabelChange,
   onSelect,
+  onDoubleClick,
 }: FlowCardProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -117,6 +138,11 @@ export function FlowCard({
     document.addEventListener('mouseup', handleMouseUp);
   };
 
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDoubleClick(id);
+  };
+
   const handleConnectionStart = (e: React.MouseEvent) => {
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
@@ -134,79 +160,64 @@ export function FlowCard({
   };
 
   return (
-    <div
-      className={`absolute cursor-move select-none ${isDragging ? 'z-50' : 'z-10'}`}
-      style={{ 
-        left: `${x}px`, 
-        top: `${y}px`, 
-        transform: 'translate(-50%, -50%)',
-      }}
-      onMouseDown={handleMouseDown}
-      onMouseEnter={handleConnectionEnd}
-    >
-      <div className={`relative border-2 ${config.color} ${config.shape} bg-white shadow-lg min-w-[140px] group ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
-        <div className="p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <div className={`${config.bgColor} p-1 rounded text-white`}>
-              {config.icon}
-            </div>
-            {isEditing ? (
-              <input
-                type="text"
-                value={label}
-                onChange={(e) => onLabelChange(id, e.target.value)}
-                onBlur={() => setIsEditing(false)}
-                onKeyDown={(e) => e.key === 'Enter' && setIsEditing(false)}
-                className="flex-1 px-1 border rounded"
-                autoFocus
-                onClick={(e) => e.stopPropagation()}
-                onMouseDown={(e) => e.stopPropagation()}
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className={`absolute cursor-move select-none ${isDragging ? 'z-50' : 'z-10'}`}
+            style={{ 
+              left: `${x}px`, 
+              top: `${y}px`, 
+              transform: 'translate(-50%, -50%)',
+            }}
+            onMouseDown={handleMouseDown}
+            onMouseEnter={handleConnectionEnd}
+            onDoubleClick={handleDoubleClick}
+          >
+            <div className={`relative border-2 ${config.color} ${config.shape} bg-white shadow-lg group ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
+              <div className="p-4">
+                <div className={`${config.bgColor} p-2 rounded text-white`}>
+                  {config.icon}
+                </div>
+              </div>
+              
+              {/* Connection points */}
+              <div 
+                className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-2 border-gray-400 rounded-full cursor-pointer hover:bg-blue-400 hover:border-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                onMouseDown={handleConnectionStart}
+                title="Drag to connect"
               />
-            ) : (
-              <span 
-                className="flex-1"
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditing(true);
-                }}
-              >
-                {label}
-              </span>
-            )}
-          </div>
-        </div>
-        
-        {/* Connection points */}
-        <div 
-          className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-2 border-gray-400 rounded-full cursor-pointer hover:bg-blue-400 hover:border-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
-          onMouseDown={handleConnectionStart}
-          title="Drag to connect"
-        />
-        <div 
-          className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-2 border-gray-400 rounded-full cursor-pointer hover:bg-blue-400 hover:border-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
-          onMouseDown={handleConnectionStart}
-          title="Drag to connect"
-        />
-        <div 
-          className="absolute top-1/2 -left-2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-gray-400 rounded-full cursor-pointer hover:bg-blue-400 hover:border-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
-          onMouseDown={handleConnectionStart}
-          title="Drag to connect"
-        />
-        <div 
-          className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-gray-400 rounded-full cursor-pointer hover:bg-blue-400 hover:border-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
-          onMouseDown={handleConnectionStart}
-          title="Drag to connect"
-        />
+              <div 
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-2 border-gray-400 rounded-full cursor-pointer hover:bg-blue-400 hover:border-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                onMouseDown={handleConnectionStart}
+                title="Drag to connect"
+              />
+              <div 
+                className="absolute top-1/2 -left-2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-gray-400 rounded-full cursor-pointer hover:bg-blue-400 hover:border-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                onMouseDown={handleConnectionStart}
+                title="Drag to connect"
+              />
+              <div 
+                className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-gray-400 rounded-full cursor-pointer hover:bg-blue-400 hover:border-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                onMouseDown={handleConnectionStart}
+                title="Drag to connect"
+              />
 
-        {/* Delete button */}
-        <button
-          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 flex items-center justify-center"
-          onClick={handleDelete}
-          title="Delete card"
-        >
-          <Trash2 className="w-3 h-3" />
-        </button>
-      </div>
-    </div>
+              {/* Delete button */}
+              <button
+                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 flex items-center justify-center"
+                onClick={handleDelete}
+                title="Delete component"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{label}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

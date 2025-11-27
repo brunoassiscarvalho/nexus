@@ -1,7 +1,7 @@
 import { AchievementBadge } from "./AchievementBadge";
 import { LearningStep, UserProgress, SkillCategory } from "../types/learning";
 import { categoryColors } from "../data/learningSteps";
-import { ScrollArea } from "@nexus/ui";
+import { ScrollArea } from "./ui/scroll-area";
 import { Trophy } from "lucide-react";
 
 interface AchievementPanelProps {
@@ -11,16 +11,13 @@ interface AchievementPanelProps {
 
 export function AchievementPanel({ steps, progress }: AchievementPanelProps) {
   const achievements = [];
-
+  
   // Check tier completions
   for (let tier = 1; tier <= 5; tier++) {
-    const tierSteps = steps.filter((s) => s.tier === tier);
-    const completedInTier = tierSteps.filter((s) =>
-      progress.completedSteps.includes(s.id)
-    );
-    const isComplete =
-      completedInTier.length === tierSteps.length && tierSteps.length > 0;
-
+    const tierSteps = steps.filter(s => s.tier === tier);
+    const completedInTier = tierSteps.filter(s => progress.completedSteps.includes(s.id));
+    const isComplete = completedInTier.length === tierSteps.length && tierSteps.length > 0;
+    
     if (isComplete) {
       const achievementId = `tier-${tier}`;
       achievements.push({
@@ -29,48 +26,38 @@ export function AchievementPanel({ steps, progress }: AchievementPanelProps) {
         description: `Completed all ${tierSteps.length} skills in tier ${tier}`,
         icon: "star" as const,
         color: "#F59E0B",
-        isNew: !progress.achievements.includes(achievementId),
+        isNew: !progress.achievements.includes(achievementId)
       });
     }
   }
-
+  
   // Check category completions
-  const categories: SkillCategory[] = [
-    "reading",
-    "speaking",
-    "writing",
-    "listening",
-  ];
-  categories.forEach((category) => {
-    const categorySteps = steps.filter((s) => s.category === category);
-    const completedInCategory = categorySteps.filter((s) =>
-      progress.completedSteps.includes(s.id)
-    );
-    const isComplete =
-      completedInCategory.length === categorySteps.length &&
-      categorySteps.length > 0;
-
+  const categories: SkillCategory[] = ["reading", "speaking", "writing", "listening"];
+  categories.forEach(category => {
+    const categorySteps = steps.filter(s => s.category === category);
+    const completedInCategory = categorySteps.filter(s => progress.completedSteps.includes(s.id));
+    const isComplete = completedInCategory.length === categorySteps.length && categorySteps.length > 0;
+    
     if (isComplete) {
       const achievementId = `category-${category}`;
-      const categoryNames: Record<SkillCategory, string> = {
+      const categoryNames = {
         reading: "Reading Champion",
         speaking: "Speaking Expert",
         writing: "Writing Master",
-        listening: "Listening Pro",
-        foundation: "Foundation Builder",
+        listening: "Listening Pro"
       };
-
+      
       achievements.push({
         id: achievementId,
         title: categoryNames[category],
         description: `Mastered all ${categorySteps.length} ${category} skills`,
         icon: "award" as const,
         color: categoryColors[category].primary,
-        isNew: !progress.achievements.includes(achievementId),
+        isNew: !progress.achievements.includes(achievementId)
       });
     }
   });
-
+  
   // Check for mastery (all steps completed)
   if (progress.completedSteps.length === steps.length) {
     const achievementId = "mastery";
@@ -80,10 +67,10 @@ export function AchievementPanel({ steps, progress }: AchievementPanelProps) {
       description: `Completed all ${steps.length} skills! You are unstoppable!`,
       icon: "crown" as const,
       color: "#8B5CF6",
-      isNew: !progress.achievements.includes(achievementId),
+      isNew: !progress.achievements.includes(achievementId)
     });
   }
-
+  
   if (achievements.length === 0) {
     return null;
   }
@@ -97,10 +84,10 @@ export function AchievementPanel({ steps, progress }: AchievementPanelProps) {
           {achievements.length} unlocked
         </span>
       </div>
-
+      
       <ScrollArea className="h-[200px]">
         <div className="space-y-3 pr-4">
-          {achievements.map((achievement) => (
+          {achievements.map(achievement => (
             <AchievementBadge
               key={achievement.id}
               title={achievement.title}

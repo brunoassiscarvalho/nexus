@@ -1,27 +1,14 @@
 import { useState, useEffect } from "react";
 import { LearningStep, SkillCategory } from "../types/learning";
-import {
-  Button,
-  Label,
-  Input,
-  Textarea,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  ScrollArea,
-  Separator,
-} from "@nexus/ui";
-import {
-  X,
-  Trash2,
-  Image as ImageIcon,
-  Star,
-  Users,
-  AlertTriangle,
-} from "lucide-react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { X, Trash2, Image as ImageIcon, Star, Users, AlertTriangle } from "lucide-react";
 import { categoryColors } from "../data/learningSteps";
+import { ScrollArea } from "./ui/scroll-area";
+import { Separator } from "./ui/separator";
 
 interface NodeEditorProps {
   node: LearningStep;
@@ -31,37 +18,27 @@ interface NodeEditorProps {
   allNodes: LearningStep[];
 }
 
-export function NodeEditor({
-  node,
-  onUpdate,
-  onDelete,
-  onClose,
-  allNodes,
-}: NodeEditorProps) {
+export function NodeEditor({ node, onUpdate, onDelete, onClose, allNodes }: NodeEditorProps) {
   const [editedNode, setEditedNode] = useState<LearningStep>(node);
   const colors = categoryColors[editedNode.category];
-  const children = allNodes.filter((n) =>
-    n.prerequisites.includes(editedNode.id)
-  );
-
+  const children = allNodes.filter(n => n.prerequisites.includes(editedNode.id));
+  
   const isRoot = editedNode.prerequisites.length === 0;
   const isLeaf = children.length === 0;
-
+  
   // Check if this is the Mastery Challenge (final convergence node)
-  const currentMaxTier = Math.max(...allNodes.map((s) => s.tier));
-  const isMasteryChallenge =
-    editedNode.tier === currentMaxTier &&
-    editedNode.prerequisites.length > 1 &&
-    children.length === 0;
-
+  const currentMaxTier = Math.max(...allNodes.map(s => s.tier));
+  const isMasteryChallenge = editedNode.tier === currentMaxTier && 
+                            editedNode.prerequisites.length > 1 &&
+                            children.length === 0;
+  
   const isMiddle = !isRoot && !isLeaf && !isMasteryChallenge;
-
+  
   // Check if this leaf connects to Mastery Challenge
-  const masteryNode = allNodes.find(
-    (n) => n.tier === currentMaxTier && n.prerequisites.length > 1
+  const masteryNode = allNodes.find(n => 
+    n.tier === currentMaxTier && n.prerequisites.length > 1
   );
-  const isConnectedToMastery =
-    masteryNode?.prerequisites.includes(editedNode.id) || false;
+  const isConnectedToMastery = masteryNode?.prerequisites.includes(editedNode.id) || false;
   const shouldConnectToMastery = isLeaf && !isRoot && !isMasteryChallenge;
 
   useEffect(() => {
@@ -77,10 +54,7 @@ export function NodeEditor({
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div
-        className="p-6 shrink-0 border-b"
-        style={{ backgroundColor: colors.secondary }}
-      >
+      <div className="p-6 shrink-0 border-b" style={{ backgroundColor: colors.secondary }}>
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
@@ -104,43 +78,25 @@ export function NodeEditor({
             <X className="w-5 h-5" style={{ color: colors.text }} />
           </button>
         </div>
-
+        
         {/* Quick stats */}
         <div className="flex gap-4 mt-4">
-          <div
-            className="flex-1 bg-white/60 rounded-lg p-3 border"
-            style={{ borderColor: colors.border }}
-          >
-            <div
-              className="text-xs opacity-70 mb-1"
-              style={{ color: colors.text }}
-            >
-              Parents
-            </div>
+          <div className="flex-1 bg-white/60 rounded-lg p-3 border" style={{ borderColor: colors.border }}>
+            <div className="text-xs opacity-70 mb-1" style={{ color: colors.text }}>Parents</div>
             <div className="flex items-center gap-1">
               <Users className="w-4 h-4" style={{ color: colors.primary }} />
-              <span style={{ color: colors.text }}>
-                {editedNode.prerequisites.length}
-              </span>
+              <span style={{ color: colors.text }}>{editedNode.prerequisites.length}</span>
             </div>
           </div>
-          <div
-            className="flex-1 bg-white/60 rounded-lg p-3 border"
-            style={{ borderColor: colors.border }}
-          >
-            <div
-              className="text-xs opacity-70 mb-1"
-              style={{ color: colors.text }}
-            >
-              Children
-            </div>
+          <div className="flex-1 bg-white/60 rounded-lg p-3 border" style={{ borderColor: colors.border }}>
+            <div className="text-xs opacity-70 mb-1" style={{ color: colors.text }}>Children</div>
             <div className="flex items-center gap-1">
               <Users className="w-4 h-4" style={{ color: colors.primary }} />
               <span style={{ color: colors.text }}>{children.length}</span>
             </div>
           </div>
         </div>
-
+        
         {/* Node type badge */}
         <div className="mt-3">
           {isMasteryChallenge && (
@@ -162,18 +118,16 @@ export function NodeEditor({
                 <span>Leaf Node (Cannot be deleted)</span>
               </div>
               {shouldConnectToMastery && (
-                <div
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border ml-2 ${
-                    isConnectedToMastery
-                      ? "bg-purple-50 text-purple-700 border-purple-300"
-                      : "bg-red-50 text-red-700 border-red-300"
-                  }`}
-                >
+                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border ml-2 ${
+                  isConnectedToMastery 
+                    ? 'bg-purple-50 text-purple-700 border-purple-300' 
+                    : 'bg-red-50 text-red-700 border-red-300'
+                }`}>
                   <Star className="w-3 h-3" />
                   <span>
-                    {isConnectedToMastery
-                      ? "✓ Connected to Mastery Challenge"
-                      : "⚠ Not connected to Mastery Challenge"}
+                    {isConnectedToMastery 
+                      ? '✓ Connected to Mastery Challenge' 
+                      : '⚠ Not connected to Mastery Challenge'}
                   </span>
                 </div>
               )}
@@ -181,9 +135,7 @@ export function NodeEditor({
           )}
           {isMiddle && (
             <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full text-xs border border-blue-300">
-              <span>
-                Middle Node (Deletable - will reconnect children to parent)
-              </span>
+              <span>Middle Node (Deletable - will reconnect children to parent)</span>
             </div>
           )}
         </div>
@@ -264,7 +216,7 @@ export function NodeEditor({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => window.open(editedNode.imageUrl, "_blank")}
+                  onClick={() => window.open(editedNode.imageUrl, '_blank')}
                   title="Preview image"
                 >
                   <ImageIcon className="w-4 h-4" />
@@ -272,13 +224,12 @@ export function NodeEditor({
               </div>
               {editedNode.imageUrl && (
                 <div className="mt-3 border rounded-lg overflow-hidden bg-gray-50">
-                  <img
-                    src={editedNode.imageUrl}
-                    alt="Preview"
+                  <img 
+                    src={editedNode.imageUrl} 
+                    alt="Preview" 
                     className="w-full h-40 object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "https://images.unsplash.com/photo-1542725752-e9f7259b3881?w=400";
+                      (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1542725752-e9f7259b3881?w=400";
                     }}
                   />
                 </div>
@@ -291,9 +242,7 @@ export function NodeEditor({
               <Input
                 type="number"
                 value={editedNode.skillPoints}
-                onChange={(e) =>
-                  handleChange("skillPoints", parseInt(e.target.value) || 0)
-                }
+                onChange={(e) => handleChange("skillPoints", parseInt(e.target.value) || 0)}
                 min={1}
                 max={100}
                 className="mt-1"
@@ -308,9 +257,7 @@ export function NodeEditor({
               <Label>Category (Color Theme)</Label>
               <Select
                 value={editedNode.category}
-                onValueChange={(value) =>
-                  handleChange("category", value as SkillCategory)
-                }
+                onValueChange={(value) => handleChange("category", value as SkillCategory)}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue />
@@ -369,8 +316,8 @@ export function NodeEditor({
               <Label>Parent Skills (Prerequisites)</Label>
               {editedNode.prerequisites.length > 0 ? (
                 <div className="mt-2 space-y-2">
-                  {editedNode.prerequisites.map((prereqId) => {
-                    const prereq = allNodes.find((n) => n.id === prereqId);
+                  {editedNode.prerequisites.map(prereqId => {
+                    const prereq = allNodes.find(n => n.id === prereqId);
                     if (!prereq) return null;
                     const prereqColors = categoryColors[prereq.category];
                     return (
@@ -411,7 +358,7 @@ export function NodeEditor({
               <Label>Child Skills</Label>
               {children.length > 0 ? (
                 <div className="mt-2 space-y-2">
-                  {children.map((child) => {
+                  {children.map(child => {
                     const childColors = categoryColors[child.category];
                     return (
                       <div
@@ -443,8 +390,7 @@ export function NodeEditor({
                     No child skills yet
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Hover over this node in the editor and click + to add
-                    children
+                    Hover over this node in the editor and click + to add children
                   </p>
                 </div>
               )}
@@ -457,7 +403,11 @@ export function NodeEditor({
       <div className="p-6 border-t bg-gray-50 shrink-0">
         {isMiddle ? (
           <>
-            <Button variant="destructive" onClick={onDelete} className="w-full">
+            <Button
+              variant="destructive"
+              onClick={onDelete}
+              className="w-full"
+            >
               <Trash2 className="w-4 h-4 mr-2" />
               Delete Middle Node
             </Button>
@@ -476,10 +426,10 @@ export function NodeEditor({
               Cannot Delete
             </Button>
             <p className="text-xs text-center text-muted-foreground mt-3">
-              {isMasteryChallenge
+              {isMasteryChallenge 
                 ? "Mastery Challenge is protected as the final convergence node"
-                : isRoot
-                  ? "Root nodes cannot be deleted"
+                : isRoot 
+                  ? "Root nodes cannot be deleted" 
                   : "Leaf nodes cannot be deleted"}
             </p>
           </>

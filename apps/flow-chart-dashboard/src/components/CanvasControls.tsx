@@ -1,5 +1,5 @@
-import { ZoomIn, ZoomOut, Maximize2, Download, Upload } from "lucide-react";
-import { Button } from "@nexus/ui";
+import { ZoomIn, ZoomOut, Maximize2, Download, Upload, Save } from 'lucide-react';
+import { Button } from './ui/button';
 
 interface CanvasControlsProps {
   zoom: number;
@@ -8,6 +8,7 @@ interface CanvasControlsProps {
   onResetView: () => void;
   onExport: () => void;
   onImport: () => void;
+  onSave?: () => void;
 }
 
 export function CanvasControls({
@@ -17,9 +18,10 @@ export function CanvasControls({
   onResetView,
   onExport,
   onImport,
+  onSave,
 }: CanvasControlsProps) {
   return (
-    <div className="absolute top-4 right-4 z-50 flex flex-col gap-2">
+    <div className="absolute bottom-4 left-4 z-50 flex gap-2">
       <div className="bg-card border border-border rounded-lg shadow-lg p-2 flex flex-col gap-1">
         <Button
           variant="ghost"
@@ -46,13 +48,21 @@ export function CanvasControls({
           <Maximize2 className="w-4 h-4" />
         </Button>
         <div className="px-2 py-1 text-center border-t border-border mt-1">
-          <span className="text-muted-foreground">
-            {Math.round(zoom * 100)}%
-          </span>
+          <span className="text-muted-foreground">{Math.round(zoom * 100)}%</span>
         </div>
       </div>
-
+      
       <div className="bg-card border border-border rounded-lg shadow-lg p-2 flex flex-col gap-1">
+        {onSave && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onSave}
+            title="Save design"
+          >
+            <Save className="w-4 h-4" />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"

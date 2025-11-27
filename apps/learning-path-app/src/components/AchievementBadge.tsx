@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Trophy, Award, Star, Crown } from "lucide-react";
-import { cn } from "@nexus/ui";
+import { cn } from "./ui/utils";
+
 interface AchievementBadgeProps {
   title: string;
   description: string;
@@ -10,21 +11,21 @@ interface AchievementBadgeProps {
   onClick?: () => void;
 }
 
-export function AchievementBadge({
-  title,
-  description,
-  icon,
-  color,
+export function AchievementBadge({ 
+  title, 
+  description, 
+  icon, 
+  color, 
   isNew,
-  onClick,
+  onClick 
 }: AchievementBadgeProps) {
   const iconMap = {
     trophy: Trophy,
     award: Award,
     star: Star,
-    crown: Crown,
+    crown: Crown
   };
-
+  
   const Icon = iconMap[icon];
 
   return (
@@ -49,22 +50,17 @@ export function AchievementBadge({
           NEW!
         </motion.div>
       )}
-
+      
       <div className="flex items-center gap-3">
         <div
           className="w-12 h-12 rounded-full flex items-center justify-center"
-          style={{
-            backgroundColor: color + "20",
-            border: `2px solid ${color}`,
-          }}
+          style={{ backgroundColor: color + "20", border: `2px solid ${color}` }}
         >
           <Icon className="w-6 h-6" style={{ color }} />
         </div>
-
+        
         <div className="flex-1">
-          <div className="text-sm" style={{ color }}>
-            {title}
-          </div>
+          <div className="text-sm" style={{ color }}>{title}</div>
           <div className="text-xs text-muted-foreground">{description}</div>
         </div>
       </div>

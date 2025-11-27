@@ -1,5 +1,5 @@
-import { cn } from "@nexus/ui";
 import { Users, Settings, Sparkles, ChevronLeft } from "lucide-react";
+import { cn } from "./ui/utils";
 
 type Mode = "user" | "admin";
 
@@ -10,12 +10,7 @@ interface SideMenuProps {
   onToggleCollapse: () => void;
 }
 
-export function SideMenu({
-  currentMode,
-  onModeChange,
-  isCollapsed,
-  onToggleCollapse,
-}: SideMenuProps) {
+export function SideMenu({ currentMode, onModeChange, isCollapsed, onToggleCollapse }: SideMenuProps) {
   return (
     <div
       className={cn(

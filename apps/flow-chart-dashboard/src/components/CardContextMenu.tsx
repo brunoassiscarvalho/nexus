@@ -1,4 +1,4 @@
-import { Circle, Square, Diamond, Hexagon, Zap } from 'lucide-react';
+import { Server, Database, Cloud, Globe, Layers, Zap, HardDrive, Network } from 'lucide-react';
 import { CardType } from './CardSidebar';
 
 interface CardContextMenuProps {
@@ -9,11 +9,14 @@ interface CardContextMenuProps {
 }
 
 const cardOptions: Array<{ type: CardType; label: string; icon: React.ReactNode; color: string }> = [
-  { type: 'start', label: 'Start/End', icon: <Circle className="w-4 h-4" />, color: 'bg-green-500' },
-  { type: 'process', label: 'Process', icon: <Square className="w-4 h-4" />, color: 'bg-blue-500' },
-  { type: 'decision', label: 'Decision', icon: <Diamond className="w-4 h-4" />, color: 'bg-yellow-500' },
-  { type: 'input', label: 'Input/Output', icon: <Hexagon className="w-4 h-4" />, color: 'bg-purple-500' },
-  { type: 'action', label: 'Action', icon: <Zap className="w-4 h-4" />, color: 'bg-orange-500' },
+  { type: 'api', label: 'API Gateway', icon: <Globe className="w-4 h-4" />, color: 'bg-blue-500' },
+  { type: 'database', label: 'Database', icon: <Database className="w-4 h-4" />, color: 'bg-green-500' },
+  { type: 'service', label: 'Service', icon: <Server className="w-4 h-4" />, color: 'bg-purple-500' },
+  { type: 'frontend', label: 'Frontend', icon: <Cloud className="w-4 h-4" />, color: 'bg-cyan-500' },
+  { type: 'backend', label: 'Backend', icon: <Layers className="w-4 h-4" />, color: 'bg-indigo-500' },
+  { type: 'queue', label: 'Message Queue', icon: <Zap className="w-4 h-4" />, color: 'bg-orange-500' },
+  { type: 'cache', label: 'Cache', icon: <HardDrive className="w-4 h-4" />, color: 'bg-red-500' },
+  { type: 'loadbalancer', label: 'Load Balancer', icon: <Network className="w-4 h-4" />, color: 'bg-yellow-500' },
 ];
 
 export function CardContextMenu({ x, y, onSelectCard, onClose }: CardContextMenuProps) {
@@ -31,7 +34,7 @@ export function CardContextMenu({ x, y, onSelectCard, onClose }: CardContextMenu
         style={{ left: `${x}px`, top: `${y}px` }}
       >
         <div className="mb-2 px-2 py-1 border-b border-border">
-          <span className="text-muted-foreground">Create new card</span>
+          <span className="text-muted-foreground">Create new component</span>
         </div>
         <div className="space-y-1">
           {cardOptions.map((option) => (
