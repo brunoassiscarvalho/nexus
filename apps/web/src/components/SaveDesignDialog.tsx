@@ -1,15 +1,8 @@
-import { useState } from "react";
-import {
-  Label,
-  Input,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@nexus/ui";
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 interface SaveDesignDialogProps {
   open: boolean;
@@ -18,18 +11,13 @@ interface SaveDesignDialogProps {
   defaultName?: string;
 }
 
-export function SaveDesignDialog({
-  open,
-  onOpenChange,
-  onSave,
-  defaultName = "",
-}: SaveDesignDialogProps) {
+export function SaveDesignDialog({ open, onOpenChange, onSave, defaultName = '' }: SaveDesignDialogProps) {
   const [name, setName] = useState(defaultName);
 
   const handleSave = () => {
     if (name.trim()) {
       onSave(name.trim());
-      setName("");
+      setName('');
       onOpenChange(false);
     }
   };
@@ -51,7 +39,7 @@ export function SaveDesignDialog({
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g., Microservices Architecture"
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === 'Enter') {
                 handleSave();
               }
             }}

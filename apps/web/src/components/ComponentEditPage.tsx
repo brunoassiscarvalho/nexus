@@ -1,24 +1,12 @@
-import { useState } from "react";
-import {
-  Server,
-  Database,
-  Cloud,
-  Globe,
-  Layers,
-  Zap,
-  HardDrive,
-  Network,
-  ArrowLeft,
-  Trash2,
-} from "lucide-react";
-import {
-  Button,
-  Label,
-  Input,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
+import { useState } from 'react';
+import { Server, Database, Cloud, Globe, Layers, Zap, HardDrive, Network, ArrowLeft, Trash2 } from 'lucide-react';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Label } from './ui/label';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { 
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -27,16 +15,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  Textarea,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@nexus/ui";
-
-import { CardType } from "./CardSidebar";
-import { toast } from "sonner";
+} from './ui/alert-dialog';
+import { CardType } from './CardSidebar';
+import { toast } from 'sonner@2.0.3';
 
 interface ComponentData {
   id: string;
@@ -54,76 +35,31 @@ interface ComponentEditPageProps {
   onDelete: () => void;
 }
 
-const typeOptions: Array<{
-  value: CardType;
-  label: string;
-  icon: React.ReactNode;
+const typeOptions: Array<{ 
+  value: CardType; 
+  label: string; 
+  icon: React.ReactNode; 
   color: string;
 }> = [
-  {
-    value: "api",
-    label: "API Gateway",
-    icon: <Globe className="w-4 h-4" />,
-    color: "bg-blue-500",
-  },
-  {
-    value: "database",
-    label: "Database",
-    icon: <Database className="w-4 h-4" />,
-    color: "bg-green-500",
-  },
-  {
-    value: "service",
-    label: "Service",
-    icon: <Server className="w-4 h-4" />,
-    color: "bg-purple-500",
-  },
-  {
-    value: "frontend",
-    label: "Frontend",
-    icon: <Cloud className="w-4 h-4" />,
-    color: "bg-cyan-500",
-  },
-  {
-    value: "backend",
-    label: "Backend",
-    icon: <Layers className="w-4 h-4" />,
-    color: "bg-indigo-500",
-  },
-  {
-    value: "queue",
-    label: "Message Queue",
-    icon: <Zap className="w-4 h-4" />,
-    color: "bg-orange-500",
-  },
-  {
-    value: "cache",
-    label: "Cache",
-    icon: <HardDrive className="w-4 h-4" />,
-    color: "bg-red-500",
-  },
-  {
-    value: "loadbalancer",
-    label: "Load Balancer",
-    icon: <Network className="w-4 h-4" />,
-    color: "bg-yellow-500",
-  },
+  { value: 'api', label: 'API Gateway', icon: <Globe className="w-4 h-4" />, color: 'bg-blue-500' },
+  { value: 'database', label: 'Database', icon: <Database className="w-4 h-4" />, color: 'bg-green-500' },
+  { value: 'service', label: 'Service', icon: <Server className="w-4 h-4" />, color: 'bg-purple-500' },
+  { value: 'frontend', label: 'Frontend', icon: <Cloud className="w-4 h-4" />, color: 'bg-cyan-500' },
+  { value: 'backend', label: 'Backend', icon: <Layers className="w-4 h-4" />, color: 'bg-indigo-500' },
+  { value: 'queue', label: 'Message Queue', icon: <Zap className="w-4 h-4" />, color: 'bg-orange-500' },
+  { value: 'cache', label: 'Cache', icon: <HardDrive className="w-4 h-4" />, color: 'bg-red-500' },
+  { value: 'loadbalancer', label: 'Load Balancer', icon: <Network className="w-4 h-4" />, color: 'bg-yellow-500' },
 ];
 
-export function ComponentEditPage({
-  component,
-  onBack,
-  onSave,
-  onDelete,
-}: ComponentEditPageProps) {
+export function ComponentEditPage({ component, onBack, onSave, onDelete }: ComponentEditPageProps) {
   const [name, setName] = useState(component.label);
-  const [description, setDescription] = useState(component.description || "");
+  const [description, setDescription] = useState(component.description || '');
   const [type, setType] = useState<CardType>(component.type);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleSave = () => {
     if (!name.trim()) {
-      toast.error("Component name is required");
+      toast.error('Component name is required');
       return;
     }
 
@@ -133,16 +69,16 @@ export function ComponentEditPage({
       type,
     });
 
-    toast.success("Component updated successfully");
+    toast.success('Component updated successfully');
   };
 
   const handleDelete = () => {
     setShowDeleteDialog(false);
     onDelete();
-    toast.success("Component deleted successfully");
+    toast.success('Component deleted successfully');
   };
 
-  const currentTypeOption = typeOptions.find((opt) => opt.value === type);
+  const currentTypeOption = typeOptions.find(opt => opt.value === type);
 
   return (
     <div className="size-full bg-background overflow-auto">
@@ -156,8 +92,8 @@ export function ComponentEditPage({
             </Button>
             <h1>Edit Component</h1>
           </div>
-          <Button
-            variant="destructive"
+          <Button 
+            variant="destructive" 
             onClick={() => setShowDeleteDialog(true)}
           >
             <Trash2 className="w-4 h-4 mr-2" />
@@ -185,17 +121,12 @@ export function ComponentEditPage({
             {/* Type */}
             <div className="space-y-2">
               <Label htmlFor="type">Component Type</Label>
-              <Select
-                value={type}
-                onValueChange={(value) => setType(value as CardType)}
-              >
+              <Select value={type} onValueChange={(value) => setType(value as CardType)}>
                 <SelectTrigger id="type">
                   <SelectValue>
                     {currentTypeOption && (
                       <div className="flex items-center gap-2">
-                        <div
-                          className={`${currentTypeOption.color} p-1 rounded text-white`}
-                        >
+                        <div className={`${currentTypeOption.color} p-1 rounded text-white`}>
                           {currentTypeOption.icon}
                         </div>
                         <span>{currentTypeOption.label}</span>
@@ -207,9 +138,7 @@ export function ComponentEditPage({
                   {typeOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex items-center gap-2">
-                        <div
-                          className={`${option.color} p-1 rounded text-white`}
-                        >
+                        <div className={`${option.color} p-1 rounded text-white`}>
                           {option.icon}
                         </div>
                         <span>{option.label}</span>
@@ -242,10 +171,7 @@ export function ComponentEditPage({
                 </div>
                 <div className="p-3 bg-muted rounded-lg">
                   <p className="text-muted-foreground mb-1">Position</p>
-                  <p>
-                    X: {Math.round(component.x)}px, Y: {Math.round(component.y)}
-                    px
-                  </p>
+                  <p>X: {Math.round(component.x)}px, Y: {Math.round(component.y)}px</p>
                 </div>
               </div>
             </div>
@@ -255,7 +181,9 @@ export function ComponentEditPage({
               <Button variant="outline" onClick={onBack}>
                 Cancel
               </Button>
-              <Button onClick={handleSave}>Save Changes</Button>
+              <Button onClick={handleSave}>
+                Save Changes
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -267,14 +195,13 @@ export function ComponentEditPage({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Component?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{component.label}"? This action
-              cannot be undone. All connections to this component will also be
-              removed.
+              Are you sure you want to delete "{component.label}"? This action cannot be undone.
+              All connections to this component will also be removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
+            <AlertDialogAction 
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

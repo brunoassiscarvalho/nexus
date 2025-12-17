@@ -1,16 +1,17 @@
-import { useState, useEffect } from "react";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { CardSidebar } from "./components/CardSidebar";
-import { FlowCanvas } from "./components/FlowCanvas";
-import { ComponentDetailPage } from "./components/ComponentDetailPage";
-import { ComponentEditPage } from "./components/ComponentEditPage";
-import { DesignsListPage, Design } from "./components/DesignsListPage";
-import { CardType } from "./components/CardSidebar";
-import { Button, Toaster } from "@nexus/ui";
-import { Home } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { CardSidebar } from './components/CardSidebar';
+import { FlowCanvas } from './components/FlowCanvas';
+import { ComponentDetailPage } from './components/ComponentDetailPage';
+import { ComponentEditPage } from './components/ComponentEditPage';
+import { DesignsListPage, Design } from './components/DesignsListPage';
+import { Toaster } from './components/ui/sonner';
+import { CardType } from './components/CardSidebar';
+import { Button } from './components/ui/button';
+import { ArrowLeft, Home } from 'lucide-react';
 
-type Page = "list" | "canvas" | "detail" | "edit";
+type Page = 'list' | 'canvas' | 'detail' | 'edit';
 
 interface ComponentData {
   id: string;
@@ -22,80 +23,93 @@ interface ComponentData {
 }
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<Page>("list");
-  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
-    null
-  );
+  const [currentPage, setCurrentPage] = useState<Page>('list');
+  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
   const [components, setComponents] = useState<ComponentData[]>([]);
   const [currentDesignId, setCurrentDesignId] = useState<string | null>(null);
+  const [designToLoad, setDesignToLoad] = useState<Design | null>(null);
 
   // Listen for component double-click events from FlowCanvas
   useEffect(() => {
     const handleOpenDetail = (e: Event) => {
       const customEvent = e as CustomEvent<{ id: string }>;
       setSelectedComponentId(customEvent.detail.id);
-      setCurrentPage("detail");
+      setCurrentPage('detail');
     };
 
-    window.addEventListener("openComponentDetail", handleOpenDetail);
-    return () =>
-      window.removeEventListener("openComponentDetail", handleOpenDetail);
+    window.addEventListener('openComponentDetail', handleOpenDetail);
+    return () => window.removeEventListener('openComponentDetail', handleOpenDetail);
   }, []);
 
+  // Load design when canvas is ready
+  useEffect(() => {
+    if (currentPage === 'canvas' && designToLoad) {
+      // Dispatch event to load design after canvas is mounted
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('loadDesign', { detail: designToLoad }));
+        setDesignToLoad(null);
+      }, 0);
+    }
+  }, [currentPage, designToLoad]);
+
   // Get selected component data
-  const selectedComponent = selectedComponentId
-    ? components.find((c) => c.id === selectedComponentId)
+  const selectedComponent = selectedComponentId 
+    ? components.find(c => c.id === selectedComponentId) 
     : null;
 
   const handleBackToCanvas = () => {
-    setCurrentPage("canvas");
+    setCurrentPage('canvas');
     setSelectedComponentId(null);
   };
 
   const handleBackToList = () => {
-    setCurrentPage("list");
+    // Save current design before navigating away
+    if (currentPage === 'canvas') {
+      window.dispatchEvent(new CustomEvent('saveBeforeExit'));
+    }
+    setCurrentPage('list');
     setSelectedComponentId(null);
     setCurrentDesignId(null);
   };
 
   const handleCreateNew = () => {
     setCurrentDesignId(null);
-    setCurrentPage("canvas");
+    setCurrentPage('canvas');
     // Dispatch event to clear canvas
-    window.dispatchEvent(new CustomEvent("clearCanvas"));
+    window.dispatchEvent(new CustomEvent('clearCanvas'));
   };
 
   const handleSelectDesign = (design: Design) => {
     setCurrentDesignId(design.id);
-    setCurrentPage("canvas");
-    // Dispatch event to load design
-    window.dispatchEvent(new CustomEvent("loadDesign", { detail: design }));
+    setCurrentPage('canvas');
+    // Set design to load after canvas is mounted
+    setDesignToLoad(design);
   };
 
   const handleEditComponent = () => {
-    setCurrentPage("edit");
+    setCurrentPage('edit');
   };
 
   const handleBackToDetail = () => {
-    setCurrentPage("detail");
+    setCurrentPage('detail');
   };
 
   const handleSaveComponent = (updates: Partial<ComponentData>) => {
     // This will be dispatched to FlowCanvas
     if (selectedComponentId) {
-      const event = new CustomEvent("updateComponent", {
-        detail: { id: selectedComponentId, updates },
+      const event = new CustomEvent('updateComponent', { 
+        detail: { id: selectedComponentId, updates } 
       });
       window.dispatchEvent(event);
     }
-    setCurrentPage("detail");
+    setCurrentPage('detail');
   };
 
   const handleDeleteComponent = () => {
     // This will be dispatched to FlowCanvas
     if (selectedComponentId) {
-      const event = new CustomEvent("deleteComponent", {
-        detail: { id: selectedComponentId },
+      const event = new CustomEvent('deleteComponent', { 
+        detail: { id: selectedComponentId } 
       });
       window.dispatchEvent(event);
     }
@@ -109,16 +123,15 @@ export default function App() {
       setComponents(customEvent.detail.components);
     };
 
-    window.addEventListener("componentsUpdated", handleComponentsUpdate);
-    return () =>
-      window.removeEventListener("componentsUpdated", handleComponentsUpdate);
+    window.addEventListener('componentsUpdated', handleComponentsUpdate);
+    return () => window.removeEventListener('componentsUpdated', handleComponentsUpdate);
   }, []);
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="size-full flex flex-col">
         {/* Header with back button */}
-        {currentPage !== "list" && (
+        {currentPage !== 'list' && (
           <div className="bg-background border-b border-border px-4 py-2 flex items-center gap-2 z-50">
             <Button variant="ghost" size="sm" onClick={handleBackToList}>
               <Home className="w-4 h-4 mr-2" />
@@ -128,29 +141,29 @@ export default function App() {
         )}
 
         <div className="flex-1 flex overflow-hidden">
-          {currentPage === "list" && (
+          {currentPage === 'list' && (
             <DesignsListPage
               onSelectDesign={handleSelectDesign}
               onCreateNew={handleCreateNew}
             />
           )}
-
-          {currentPage === "canvas" && (
+          
+          {currentPage === 'canvas' && (
             <>
               <CardSidebar />
               <FlowCanvas />
             </>
           )}
-
-          {currentPage === "detail" && selectedComponent && (
+          
+          {currentPage === 'detail' && selectedComponent && (
             <ComponentDetailPage
               component={selectedComponent}
               onBack={handleBackToCanvas}
               onEdit={handleEditComponent}
             />
           )}
-
-          {currentPage === "edit" && selectedComponent && (
+          
+          {currentPage === 'edit' && selectedComponent && (
             <ComponentEditPage
               component={selectedComponent}
               onBack={handleBackToDetail}

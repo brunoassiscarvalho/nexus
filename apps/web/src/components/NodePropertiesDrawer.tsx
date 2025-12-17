@@ -1,41 +1,12 @@
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  Label,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Button,
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@nexus/ui";
-
-import { CardType } from "./CardSidebar";
-import {
-  Server,
-  Database,
-  Cloud,
-  Globe,
-  Layers,
-  Zap,
-  HardDrive,
-  Network,
-  Trash2,
-  ExternalLink,
-} from "lucide-react";
-import { useState } from "react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
+import { Label } from './ui/label';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { CardType } from './CardSidebar';
+import { Server, Database, Cloud, Globe, Layers, Zap, HardDrive, Network, Trash2, ExternalLink } from 'lucide-react';
+import { Button } from './ui/button';
+import { useState } from 'react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 
 interface Card {
   id: string;
@@ -54,70 +25,18 @@ interface NodePropertiesDrawerProps {
   onNavigateToDetail?: (id: string) => void;
 }
 
-const cardTypeOptions: Array<{
-  value: CardType;
-  label: string;
-  icon: React.ReactNode;
-  color: string;
-}> = [
-  {
-    value: "api",
-    label: "API Gateway",
-    icon: <Globe className="w-4 h-4" />,
-    color: "bg-blue-500",
-  },
-  {
-    value: "database",
-    label: "Database",
-    icon: <Database className="w-4 h-4" />,
-    color: "bg-green-500",
-  },
-  {
-    value: "service",
-    label: "Service",
-    icon: <Server className="w-4 h-4" />,
-    color: "bg-purple-500",
-  },
-  {
-    value: "frontend",
-    label: "Frontend",
-    icon: <Cloud className="w-4 h-4" />,
-    color: "bg-cyan-500",
-  },
-  {
-    value: "backend",
-    label: "Backend",
-    icon: <Layers className="w-4 h-4" />,
-    color: "bg-indigo-500",
-  },
-  {
-    value: "queue",
-    label: "Message Queue",
-    icon: <Zap className="w-4 h-4" />,
-    color: "bg-orange-500",
-  },
-  {
-    value: "cache",
-    label: "Cache",
-    icon: <HardDrive className="w-4 h-4" />,
-    color: "bg-red-500",
-  },
-  {
-    value: "loadbalancer",
-    label: "Load Balancer",
-    icon: <Network className="w-4 h-4" />,
-    color: "bg-yellow-500",
-  },
+const cardTypeOptions: Array<{ value: CardType; label: string; icon: React.ReactNode; color: string }> = [
+  { value: 'api', label: 'API Gateway', icon: <Globe className="w-4 h-4" />, color: 'bg-blue-500' },
+  { value: 'database', label: 'Database', icon: <Database className="w-4 h-4" />, color: 'bg-green-500' },
+  { value: 'service', label: 'Service', icon: <Server className="w-4 h-4" />, color: 'bg-purple-500' },
+  { value: 'frontend', label: 'Frontend', icon: <Cloud className="w-4 h-4" />, color: 'bg-cyan-500' },
+  { value: 'backend', label: 'Backend', icon: <Layers className="w-4 h-4" />, color: 'bg-indigo-500' },
+  { value: 'queue', label: 'Message Queue', icon: <Zap className="w-4 h-4" />, color: 'bg-orange-500' },
+  { value: 'cache', label: 'Cache', icon: <HardDrive className="w-4 h-4" />, color: 'bg-red-500' },
+  { value: 'loadbalancer', label: 'Load Balancer', icon: <Network className="w-4 h-4" />, color: 'bg-yellow-500' },
 ];
 
-export function NodePropertiesDrawer({
-  selectedCard,
-  open,
-  onClose,
-  onUpdateCard,
-  onDeleteCard,
-  onNavigateToDetail,
-}: NodePropertiesDrawerProps) {
+export function NodePropertiesDrawer({ selectedCard, open, onClose, onUpdateCard, onDeleteCard, onNavigateToDetail }: NodePropertiesDrawerProps) {
   const [sidebarWidth, setSidebarWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
 
@@ -159,32 +78,29 @@ export function NodePropertiesDrawer({
 
     const handleMouseUp = () => {
       setIsResizing(false);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
-  const currentTypeOption = cardTypeOptions.find(
-    (opt) => opt.value === selectedCard.type
-  );
+  const currentTypeOption = cardTypeOptions.find(opt => opt.value === selectedCard.type);
 
   return (
-    <Sheet open={open} modal={false}>
-      <SheetContent
-        side="right"
+    <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()} modal={false}>
+      <SheetContent 
+        side="right" 
         className="p-0 border-l"
         style={{ width: `${sidebarWidth}px` }}
         hideOverlay
         onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
       >
         {/* Resize handle */}
         <div
           className={`absolute left-0 top-0 bottom-0 w-1 hover:w-2 bg-border hover:bg-primary transition-all cursor-col-resize ${
-            isResizing ? "w-2 bg-primary" : ""
+            isResizing ? 'w-2 bg-primary' : ''
           }`}
           onMouseDown={handleMouseDown}
         />
@@ -193,7 +109,7 @@ export function NodePropertiesDrawer({
           <SheetHeader>
             <SheetTitle>Node Properties</SheetTitle>
           </SheetHeader>
-
+          
           <div className="mt-6 space-y-6">
             {/* Node Name */}
             <div className="space-y-2">
@@ -209,17 +125,12 @@ export function NodePropertiesDrawer({
             {/* Node Type */}
             <div className="space-y-2">
               <Label htmlFor="node-type">Node Type</Label>
-              <Select
-                value={selectedCard.type}
-                onValueChange={handleTypeChange}
-              >
+              <Select value={selectedCard.type} onValueChange={handleTypeChange}>
                 <SelectTrigger id="node-type">
                   <SelectValue>
                     {currentTypeOption && (
                       <div className="flex items-center gap-2">
-                        <div
-                          className={`${currentTypeOption.color} p-1 rounded text-white`}
-                        >
+                        <div className={`${currentTypeOption.color} p-1 rounded text-white`}>
                           {currentTypeOption.icon}
                         </div>
                         <span>{currentTypeOption.label}</span>
@@ -231,9 +142,7 @@ export function NodePropertiesDrawer({
                   {cardTypeOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex items-center gap-2">
-                        <div
-                          className={`${option.color} p-1 rounded text-white`}
-                        >
+                        <div className={`${option.color} p-1 rounded text-white`}>
                           {option.icon}
                         </div>
                         <span>{option.label}</span>
@@ -256,10 +165,7 @@ export function NodePropertiesDrawer({
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Node ID:</span>
-                <span
-                  className="truncate ml-2 max-w-[200px]"
-                  title={selectedCard.id}
-                >
+                <span className="truncate ml-2 max-w-[200px]" title={selectedCard.id}>
                   {selectedCard.id}
                 </span>
               </div>
@@ -268,7 +174,7 @@ export function NodePropertiesDrawer({
             {/* Action Buttons */}
             <div className="pt-4 border-t border-border space-y-3">
               {onNavigateToDetail && (
-                <Button
+                <Button 
                   onClick={handleNavigateToDetail}
                   className="w-full"
                   variant="outline"
@@ -290,15 +196,12 @@ export function NodePropertiesDrawer({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete Node</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete "{selectedCard.label}"?
-                        This will also remove all connections to this node.
+                        Are you sure you want to delete "{selectedCard.label}"? This will also remove all connections to this node.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete}>
-                        Delete
-                      </AlertDialogAction>
+                      <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>

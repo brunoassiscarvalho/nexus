@@ -1,25 +1,8 @@
-import {
-  Server,
-  Database,
-  Cloud,
-  Globe,
-  Layers,
-  Zap,
-  HardDrive,
-  Network,
-  ArrowLeft,
-  Pencil,
-} from "lucide-react";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Badge,
-} from "@nexus/ui";
-import { CardType } from "./CardSidebar";
+import { Server, Database, Cloud, Globe, Layers, Zap, HardDrive, Network, ArrowLeft, Pencil } from 'lucide-react';
+import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
+import { CardType } from './CardSidebar';
 
 interface ComponentData {
   id: string;
@@ -36,79 +19,72 @@ interface ComponentDetailPageProps {
   onEdit: () => void;
 }
 
-const typeConfig: Record<
-  CardType,
-  {
-    label: string;
-    icon: React.ReactNode;
-    color: string;
-    bgColor: string;
-    description: string;
-  }
-> = {
+const typeConfig: Record<CardType, { 
+  label: string; 
+  icon: React.ReactNode; 
+  color: string;
+  bgColor: string;
+  description: string;
+}> = {
   api: {
-    label: "API Gateway",
+    label: 'API Gateway',
     icon: <Globe className="w-8 h-8" />,
-    color: "text-blue-500",
-    bgColor: "bg-blue-500",
-    description: "Manages and routes API requests to appropriate services",
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-500',
+    description: 'Manages and routes API requests to appropriate services',
   },
   database: {
-    label: "Database",
+    label: 'Database',
     icon: <Database className="w-8 h-8" />,
-    color: "text-green-500",
-    bgColor: "bg-green-500",
-    description: "Stores and manages application data persistently",
+    color: 'text-green-500',
+    bgColor: 'bg-green-500',
+    description: 'Stores and manages application data persistently',
   },
   service: {
-    label: "Service",
+    label: 'Service',
     icon: <Server className="w-8 h-8" />,
-    color: "text-purple-500",
-    bgColor: "bg-purple-500",
-    description: "Independent microservice handling specific business logic",
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-500',
+    description: 'Independent microservice handling specific business logic',
   },
   frontend: {
-    label: "Frontend",
+    label: 'Frontend',
     icon: <Cloud className="w-8 h-8" />,
-    color: "text-cyan-500",
-    bgColor: "bg-cyan-500",
-    description: "User-facing interface and client-side application",
+    color: 'text-cyan-500',
+    bgColor: 'bg-cyan-500',
+    description: 'User-facing interface and client-side application',
   },
   backend: {
-    label: "Backend",
+    label: 'Backend',
     icon: <Layers className="w-8 h-8" />,
-    color: "text-indigo-500",
-    bgColor: "bg-indigo-500",
-    description: "Server-side application handling business logic",
+    color: 'text-indigo-500',
+    bgColor: 'bg-indigo-500',
+    description: 'Server-side application handling business logic',
   },
   queue: {
-    label: "Message Queue",
+    label: 'Message Queue',
     icon: <Zap className="w-8 h-8" />,
-    color: "text-orange-500",
-    bgColor: "bg-orange-500",
-    description: "Asynchronous message processing and event streaming",
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-500',
+    description: 'Asynchronous message processing and event streaming',
   },
   cache: {
-    label: "Cache",
+    label: 'Cache',
     icon: <HardDrive className="w-8 h-8" />,
-    color: "text-red-500",
-    bgColor: "bg-red-500",
-    description: "Fast in-memory data storage for performance optimization",
+    color: 'text-red-500',
+    bgColor: 'bg-red-500',
+    description: 'Fast in-memory data storage for performance optimization',
   },
   loadbalancer: {
-    label: "Load Balancer",
+    label: 'Load Balancer',
     icon: <Network className="w-8 h-8" />,
-    color: "text-yellow-500",
-    bgColor: "bg-yellow-500",
-    description: "Distributes traffic across multiple service instances",
+    color: 'text-yellow-500',
+    bgColor: 'bg-yellow-500',
+    description: 'Distributes traffic across multiple service instances',
   },
 };
 
-export function ComponentDetailPage({
-  component,
-  onBack,
-  onEdit,
-}: ComponentDetailPageProps) {
+export function ComponentDetailPage({ component, onBack, onEdit }: ComponentDetailPageProps) {
   const config = typeConfig[component.type];
 
   return (
@@ -145,8 +121,7 @@ export function ComponentDetailPage({
             <div>
               <h3 className="mb-2">Description</h3>
               <p className="text-muted-foreground">
-                {component.description ||
-                  'No description provided yet. Click "Edit Component" to add one.'}
+                {component.description || 'No description provided yet. Click "Edit Component" to add one.'}
               </p>
             </div>
 
@@ -178,9 +153,8 @@ export function ComponentDetailPage({
               <h3 className="mb-3">Platform Engineering Context</h3>
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-muted-foreground">
-                  This component is part of your golden path for platform
-                  engineering. Use the connections to define data flow and
-                  dependencies between components.
+                  This component is part of your golden path for platform engineering. 
+                  Use the connections to define data flow and dependencies between components.
                 </p>
               </div>
             </div>

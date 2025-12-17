@@ -70,7 +70,7 @@ export function Minimap({ cards, connections, zoom, panX, panY, canvasWidth, can
   };
 
   return (
-    <div className="absolute bottom-4 left-[160px] bg-white/90 backdrop-blur border-2 border-border rounded-lg shadow-lg p-2 z-20">
+    <div className="minimap absolute bottom-4 left-[160px] bg-white/90 backdrop-blur border-2 border-border rounded-lg shadow-lg p-2 z-20" data-interactive>
       <div 
         className="relative bg-muted/30"
         style={{ 

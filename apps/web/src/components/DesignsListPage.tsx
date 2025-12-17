@@ -1,24 +1,10 @@
-import { useState, useEffect } from "react";
-
-import { Plus, Trash2, Clock, Pencil } from "lucide-react";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  Input,
-} from "@nexus/ui";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Plus, Trash2, Clock, Pencil } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+import { Input } from './ui/input';
+import { toast } from 'sonner@2.0.3';
 
 export interface Design {
   id: string;
@@ -39,16 +25,13 @@ interface DesignsListPageProps {
   onCreateNew: () => void;
 }
 
-export function DesignsListPage({
-  onSelectDesign,
-  onCreateNew,
-}: DesignsListPageProps) {
+export function DesignsListPage({ onSelectDesign, onCreateNew }: DesignsListPageProps) {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [designToDelete, setDesignToDelete] = useState<string | null>(null);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [designToRename, setDesignToRename] = useState<Design | null>(null);
-  const [newName, setNewName] = useState("");
+  const [newName, setNewName] = useState('');
 
   useEffect(() => {
     loadDesigns();
@@ -56,14 +39,14 @@ export function DesignsListPage({
 
   const loadDesigns = () => {
     try {
-      const saved = localStorage.getItem("systemDesigns");
+      const saved = localStorage.getItem('systemDesigns');
       if (saved) {
         const parsed = JSON.parse(saved);
         setDesigns(parsed);
       }
     } catch (error) {
-      console.error("Failed to load designs:", error);
-      toast.error("Failed to load designs");
+      console.error('Failed to load designs:', error);
+      toast.error('Failed to load designs');
     }
   };
 
@@ -75,12 +58,12 @@ export function DesignsListPage({
   const confirmDelete = () => {
     if (designToDelete) {
       try {
-        const updated = designs.filter((d) => d.id !== designToDelete);
-        localStorage.setItem("systemDesigns", JSON.stringify(updated));
+        const updated = designs.filter(d => d.id !== designToDelete);
+        localStorage.setItem('systemDesigns', JSON.stringify(updated));
         setDesigns(updated);
-        toast.success("Design deleted successfully");
+        toast.success('Design deleted successfully');
       } catch (error) {
-        toast.error("Failed to delete design");
+        toast.error('Failed to delete design');
       }
     }
     setDeleteDialogOpen(false);
@@ -96,31 +79,31 @@ export function DesignsListPage({
   const confirmRename = () => {
     if (designToRename && newName.trim()) {
       try {
-        const updated = designs.map((d) =>
-          d.id === designToRename.id
+        const updated = designs.map(d => 
+          d.id === designToRename.id 
             ? { ...d, name: newName.trim(), updatedAt: Date.now() }
             : d
         );
-        localStorage.setItem("systemDesigns", JSON.stringify(updated));
+        localStorage.setItem('systemDesigns', JSON.stringify(updated));
         setDesigns(updated);
-        toast.success("Design renamed successfully");
+        toast.success('Design renamed successfully');
       } catch (error) {
-        toast.error("Failed to rename design");
+        toast.error('Failed to rename design');
       }
     }
     setRenameDialogOpen(false);
     setDesignToRename(null);
-    setNewName("");
+    setNewName('');
   };
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -159,8 +142,8 @@ export function DesignsListPage({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {designs.map((design) => (
-              <Card
-                key={design.id}
+              <Card 
+                key={design.id} 
                 className="cursor-pointer hover:shadow-lg transition-shadow group"
                 onClick={() => onSelectDesign(design)}
               >
@@ -221,15 +204,12 @@ export function DesignsListPage({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Design</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this design? This action cannot be
-              undone.
+              Are you sure you want to delete this design? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>
-              Delete
-            </AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -249,7 +229,7 @@ export function DesignsListPage({
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Design name"
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === 'Enter') {
                   confirmRename();
                 }
               }}
@@ -257,9 +237,7 @@ export function DesignsListPage({
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmRename}>
-              Rename
-            </AlertDialogAction>
+            <AlertDialogAction onClick={confirmRename}>Rename</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
