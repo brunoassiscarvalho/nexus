@@ -89,13 +89,14 @@ export function NodePropertiesDrawer({ selectedCard, open, onClose, onUpdateCard
   const currentTypeOption = cardTypeOptions.find(opt => opt.value === selectedCard.type);
 
   return (
-    <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()} modal={false}>
+    <Sheet open={open} modal={false}>
       <SheetContent 
         side="right" 
         className="p-0 border-l"
         style={{ width: `${sidebarWidth}px` }}
         hideOverlay
         onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
       >
         {/* Resize handle */}
         <div

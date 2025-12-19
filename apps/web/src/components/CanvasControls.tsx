@@ -1,4 +1,4 @@
-import { ZoomIn, ZoomOut, Maximize2, Download, Upload } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, Download, Upload, Save } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface CanvasControlsProps {
@@ -8,6 +8,7 @@ interface CanvasControlsProps {
   onResetView: () => void;
   onExport: () => void;
   onImport: () => void;
+  onSave?: () => void;
 }
 
 export function CanvasControls({
@@ -17,6 +18,7 @@ export function CanvasControls({
   onResetView,
   onExport,
   onImport,
+  onSave,
 }: CanvasControlsProps) {
   return (
     <div className="absolute bottom-4 left-4 z-50 flex gap-2">
@@ -51,6 +53,16 @@ export function CanvasControls({
       </div>
       
       <div className="bg-card border border-border rounded-lg shadow-lg p-2 flex flex-col gap-1">
+        {onSave && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onSave}
+            title="Save design"
+          >
+            <Save className="w-4 h-4" />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"

@@ -9,6 +9,7 @@ import { toast } from 'sonner@2.0.3';
 export interface Design {
   id: string;
   name: string;
+  description?: string;
   createdAt: number;
   updatedAt: number;
   thumbnail?: string;

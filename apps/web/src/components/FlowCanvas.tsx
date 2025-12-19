@@ -1,13 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
-import { useDrop } from 'react-dnd';
-import { FlowCard } from './FlowCard';
-import { CardType } from './CardSidebar';
-import { CanvasControls } from './CanvasControls';
-import { CardContextMenu } from './CardContextMenu';
-import { NodePropertiesDrawer } from './NodePropertiesDrawer';
-import { Minimap } from './Minimap';
-import { SaveDesignDialog } from './SaveDesignDialog';
-import { toast } from 'sonner@2.0.3';
+import { useState, useRef, useEffect } from "react";
+import { useDrop } from "react-dnd";
+import { FlowCard } from "./FlowCard";
+import { CardType } from "./CardSidebar";
+import { CanvasControls } from "./CanvasControls";
+import { CardContextMenu } from "./CardContextMenu";
+import { NodePropertiesDrawer } from "./NodePropertiesDrawer";
+import { Minimap } from "./Minimap";
+import { SaveDesignDialog } from "./SaveDesignDialog";
+import { toast } from "sonner@2.0.3";
 
 interface Card {
   id: string;
@@ -43,20 +43,24 @@ interface ContextMenu {
 export function FlowCanvas() {
   const [cards, setCards] = useState<Card[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [tempConnection, setTempConnection] = useState<TempConnection | null>(null);
+  const [tempConnection, setTempConnection] = useState<TempConnection | null>(
+    null
+  );
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
-  
+
   // Zoom and pan state
   const [zoom, setZoom] = useState(1);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
   const [isPanning, setIsPanning] = useState(false);
-  const [hoveredConnection, setHoveredConnection] = useState<string | null>(null);
+  const [hoveredConnection, setHoveredConnection] = useState<string | null>(
+    null
+  );
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const connectionCompletedRef = useRef(false);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -65,17 +69,17 @@ export function FlowCanvas() {
   const initialLoadRef = useRef(false);
 
   const [{ isOver }, drop] = useDrop(() => ({
-    accept: 'CARD',
+    accept: "CARD",
     drop: (item: { cardType: CardType }, monitor) => {
       const offset = monitor.getClientOffset();
       if (offset) {
-        const canvas = document.getElementById('flow-canvas');
+        const canvas = document.getElementById("flow-canvas");
         if (canvas) {
           const rect = canvas.getBoundingClientRect();
           // Convert screen coordinates to canvas coordinates
           const x = (offset.x - rect.left - panX) / zoom;
           const y = (offset.y - rect.top - panY) / zoom;
-          
+
           addCard(item.cardType, x, y);
         }
       }
@@ -85,7 +89,12 @@ export function FlowCanvas() {
     }),
   }));
 
-  const addCard = (type: CardType, x: number, y: number, fromCardId?: string) => {
+  const addCard = (
+    type: CardType,
+    x: number,
+    y: number,
+    fromCardId?: string
+  ) => {
     const newCard: Card = {
       id: `card-${Date.now()}-${Math.random()}`,
       type,
@@ -94,7 +103,7 @@ export function FlowCanvas() {
       label: type.charAt(0).toUpperCase() + type.slice(1),
     };
     setCards((prev) => [...prev, newCard]);
-    
+
     // If created from a connection, create the connection
     if (fromCardId) {
       const newConnection: Connection = {
@@ -104,7 +113,7 @@ export function FlowCanvas() {
       };
       setConnections((prev) => [...prev, newConnection]);
     }
-    
+
     return newCard.id;
   };
 
@@ -114,17 +123,21 @@ export function FlowCanvas() {
     );
   };
 
-  const handleConnectionStart = (fromId: string, fromX: number, fromY: number) => {
-    const canvas = document.getElementById('flow-canvas');
+  const handleConnectionStart = (
+    fromId: string,
+    fromX: number,
+    fromY: number
+  ) => {
+    const canvas = document.getElementById("flow-canvas");
     if (!canvas) return;
-    
+
     const rect = canvas.getBoundingClientRect();
     const canvasX = (fromX - rect.left - panX) / zoom;
     const canvasY = (fromY - rect.top - panY) / zoom;
-    
+
     // Reset the completion flag
     connectionCompletedRef.current = false;
-    
+
     setTempConnection({
       fromId,
       fromX: canvasX,
@@ -136,7 +149,7 @@ export function FlowCanvas() {
     const handleMouseMove = (e: MouseEvent) => {
       const x = (e.clientX - rect.left - panX) / zoom;
       const y = (e.clientY - rect.top - panY) / zoom;
-      setTempConnection((prev) => prev ? { ...prev, toX: x, toY: y } : null);
+      setTempConnection((prev) => (prev ? { ...prev, toX: x, toY: y } : null));
     };
 
     const handleMouseUp = (e: MouseEvent) => {
@@ -146,7 +159,7 @@ export function FlowCanvas() {
         const screenY = e.clientY;
         const canvasX = (screenX - rect.left - panX) / zoom;
         const canvasY = (screenY - rect.top - panY) / zoom;
-        
+
         setContextMenu({
           x: screenX,
           y: screenY,
@@ -155,14 +168,14 @@ export function FlowCanvas() {
           fromCardId: fromId,
         });
       }
-      
+
       setTempConnection(null);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
   };
 
   const handleConnectionEnd = (toId: string) => {
@@ -181,7 +194,9 @@ export function FlowCanvas() {
 
   const handleDeleteCard = (id: string) => {
     setCards((prev) => prev.filter((card) => card.id !== id));
-    setConnections((prev) => prev.filter((conn) => conn.from !== id && conn.to !== id));
+    setConnections((prev) =>
+      prev.filter((conn) => conn.from !== id && conn.to !== id)
+    );
     // Clear selection if deleted card was selected
     if (selectedCardId === id) {
       setSelectedCardId(null);
@@ -190,7 +205,7 @@ export function FlowCanvas() {
 
   const handleDeleteConnection = (id: string) => {
     setConnections((prev) => prev.filter((conn) => conn.id !== id));
-    toast.success('Connection deleted');
+    toast.success("Connection deleted");
   };
 
   const handleLabelChange = (id: string, label: string) => {
@@ -205,7 +220,7 @@ export function FlowCanvas() {
 
   const handleCardDoubleClick = (id: string) => {
     // This will be handled by the parent component (App.tsx)
-    const event = new CustomEvent('openComponentDetail', { detail: { id } });
+    const event = new CustomEvent("openComponentDetail", { detail: { id } });
     window.dispatchEvent(event);
   };
 
@@ -232,29 +247,29 @@ export function FlowCanvas() {
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     // Only handle left clicks
     if (e.button !== 0) return;
-    
+
     const target = e.target as HTMLElement;
-    
+
     // Don't pan if clicking on interactive elements
     // Check if we're clicking on a card, button, input, or other interactive elements
-    const isInteractiveElement = 
-      target.closest('[data-flow-card]') || // Cards
-      target.closest('button') || // Buttons
-      target.closest('input') || // Inputs
+    const isInteractiveElement =
+      target.closest("[data-flow-card]") || // Cards
+      target.closest("button") || // Buttons
+      target.closest("input") || // Inputs
       target.closest('[role="dialog"]') || // Dialogs/modals
-      target.closest('.minimap') || // Minimap
-      target.closest('[data-interactive]'); // Other interactive elements
-    
+      target.closest(".minimap") || // Minimap
+      target.closest("[data-interactive]"); // Other interactive elements
+
     // Only pan if we're clicking on the background (not on interactive elements)
     if (isInteractiveElement) return;
-    
+
     // Deselect card when clicking on canvas background
     setSelectedCardId(null);
-    
+
     e.preventDefault();
     e.stopPropagation();
     setIsPanning(true);
-    
+
     const startX = e.clientX;
     const startY = e.clientY;
     const startPanX = panX;
@@ -269,12 +284,12 @@ export function FlowCanvas() {
 
     const handleMouseUp = () => {
       setIsPanning(false);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
   };
 
   const handleZoomIn = () => {
@@ -296,21 +311,21 @@ export function FlowCanvas() {
     const data = {
       cards,
       connections,
-      version: '1.0',
+      version: "1.0",
     };
-    
+
     const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
+    const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `flowchart-${Date.now()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
-    toast.success('Flowchart exported successfully');
+
+    toast.success("Flowchart exported successfully");
   };
 
   const handleImport = () => {
@@ -327,20 +342,25 @@ export function FlowCanvas() {
         const data = JSON.parse(event.target?.result as string);
         setCards(data.cards || []);
         setConnections(data.connections || []);
-        toast.success('Flowchart imported successfully');
+        toast.success("Flowchart imported successfully");
       } catch (error) {
-        toast.error('Failed to import flowchart');
+        toast.error("Failed to import flowchart");
       }
     };
     reader.readAsText(file);
-    
+
     // Reset input
-    e.target.value = '';
+    e.target.value = "";
   };
 
   const handleContextMenuSelect = (type: CardType) => {
     if (contextMenu) {
-      addCard(type, contextMenu.canvasX, contextMenu.canvasY, contextMenu.fromCardId || undefined);
+      addCard(
+        type,
+        contextMenu.canvasX,
+        contextMenu.canvasY,
+        contextMenu.fromCardId || undefined
+      );
       setContextMenu(null);
     }
   };
@@ -350,11 +370,13 @@ export function FlowCanvas() {
     if (currentDesignIdRef.current) {
       // Auto-save existing design without asking for name
       try {
-        const saved = localStorage.getItem('systemDesigns');
+        const saved = localStorage.getItem("systemDesigns");
         const designs = saved ? JSON.parse(saved) : [];
-        
-        const existingIndex = designs.findIndex((d: any) => d.id === currentDesignIdRef.current);
-        
+
+        const existingIndex = designs.findIndex(
+          (d: any) => d.id === currentDesignIdRef.current
+        );
+
         if (existingIndex >= 0) {
           const existingDesign = designs[existingIndex];
           designs[existingIndex] = {
@@ -367,9 +389,9 @@ export function FlowCanvas() {
               connections,
             },
           };
-          
-          localStorage.setItem('systemDesigns', JSON.stringify(designs));
-          toast.success('Design updated successfully');
+
+          localStorage.setItem("systemDesigns", JSON.stringify(designs));
+          toast.success("Design updated successfully");
           return true;
         } else {
           // Design ID exists but not found in storage, treat as new
@@ -377,7 +399,7 @@ export function FlowCanvas() {
           return false;
         }
       } catch (error) {
-        toast.error('Failed to update design');
+        toast.error("Failed to update design");
         return false;
       }
     } else {
@@ -391,11 +413,13 @@ export function FlowCanvas() {
     // Only auto-save if there's a current design ID
     if (currentDesignIdRef.current) {
       try {
-        const saved = localStorage.getItem('systemDesigns');
+        const saved = localStorage.getItem("systemDesigns");
         const designs = saved ? JSON.parse(saved) : [];
-        
-        const existingIndex = designs.findIndex((d: any) => d.id === currentDesignIdRef.current);
-        
+
+        const existingIndex = designs.findIndex(
+          (d: any) => d.id === currentDesignIdRef.current
+        );
+
         if (existingIndex >= 0) {
           const existingDesign = designs[existingIndex];
           designs[existingIndex] = {
@@ -408,28 +432,29 @@ export function FlowCanvas() {
               connections,
             },
           };
-          
-          localStorage.setItem('systemDesigns', JSON.stringify(designs));
-          console.log('Auto-saved design');
+
+          localStorage.setItem("systemDesigns", JSON.stringify(designs));
+          console.log("Auto-saved design");
         }
       } catch (error) {
-        console.error('Auto-save failed:', error);
+        console.error("Auto-save failed:", error);
       }
     }
   };
 
   const handleSaveDesign = (name: string) => {
     try {
-      const saved = localStorage.getItem('systemDesigns');
+      const saved = localStorage.getItem("systemDesigns");
       const designs = saved ? JSON.parse(saved) : [];
-      
+
       const designId = currentDesignIdRef.current || `design-${Date.now()}`;
       const existingIndex = designs.findIndex((d: any) => d.id === designId);
-      
+
       const designData = {
         id: designId,
         name,
-        createdAt: existingIndex >= 0 ? designs[existingIndex].createdAt : Date.now(),
+        createdAt:
+          existingIndex >= 0 ? designs[existingIndex].createdAt : Date.now(),
         updatedAt: Date.now(),
         nodesCount: cards.length,
         connectionsCount: connections.length,
@@ -438,24 +463,24 @@ export function FlowCanvas() {
           connections,
         },
       };
-      
-      console.log('Saving design:', designData);
-      
+
+      console.log("Saving design:", designData);
+
       if (existingIndex >= 0) {
         designs[existingIndex] = designData;
-        toast.success('Design updated successfully');
+        toast.success("Design updated successfully");
       } else {
         designs.push(designData);
-        toast.success('Design saved successfully');
+        toast.success("Design saved successfully");
       }
-      
-      localStorage.setItem('systemDesigns', JSON.stringify(designs));
+
+      localStorage.setItem("systemDesigns", JSON.stringify(designs));
       currentDesignIdRef.current = designId;
-      
-      console.log('Saved designs in localStorage:', designs);
+
+      console.log("Saved designs in localStorage:", designs);
     } catch (error) {
-      console.error('Save error:', error);
-      toast.error('Failed to save design');
+      console.error("Save error:", error);
+      toast.error("Failed to save design");
     }
   };
 
@@ -463,33 +488,33 @@ export function FlowCanvas() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Save shortcut
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
         handleSave();
       }
       // Zoom shortcuts
-      if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "0") {
         e.preventDefault();
         handleResetView();
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === '=') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "=") {
         e.preventDefault();
         handleZoomIn();
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "-") {
         e.preventDefault();
         handleZoomOut();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   // Emit components update event whenever cards change
   useEffect(() => {
-    const event = new CustomEvent('componentsUpdated', { 
-      detail: { components: cards } 
+    const event = new CustomEvent("componentsUpdated", {
+      detail: { components: cards },
     });
     window.dispatchEvent(event);
   }, [cards]);
@@ -497,7 +522,10 @@ export function FlowCanvas() {
   // Listen for component update/delete events from App
   useEffect(() => {
     const handleUpdateComponent = (e: Event) => {
-      const customEvent = e as CustomEvent<{ id: string; updates: Partial<Card> }>;
+      const customEvent = e as CustomEvent<{
+        id: string;
+        updates: Partial<Card>;
+      }>;
       handleUpdateCard(customEvent.detail.id, customEvent.detail.updates);
     };
 
@@ -513,14 +541,17 @@ export function FlowCanvas() {
     };
 
     const handleLoadDesign = (e: Event) => {
-      const customEvent = e as CustomEvent<{ id: string; data: { cards: Card[]; connections: Connection[] } }>;
-      console.log('Loading design:', customEvent.detail);
+      const customEvent = e as CustomEvent<{
+        id: string;
+        data: { cards: Card[]; connections: Connection[] };
+      }>;
+      console.log("Loading design:", customEvent.detail);
       setCards(customEvent.detail.data.cards || []);
       setConnections(customEvent.detail.data.connections || []);
       currentDesignIdRef.current = customEvent.detail.id;
       // Reset initial load flag to prevent immediate autosave after loading
       initialLoadRef.current = false;
-      toast.success('Design loaded successfully');
+      toast.success("Design loaded successfully");
     };
 
     const handleSaveBeforeExit = () => {
@@ -530,18 +561,18 @@ export function FlowCanvas() {
       }
     };
 
-    window.addEventListener('updateComponent', handleUpdateComponent);
-    window.addEventListener('deleteComponent', handleDeleteComponent);
-    window.addEventListener('clearCanvas', handleClearCanvas);
-    window.addEventListener('loadDesign', handleLoadDesign);
-    window.addEventListener('saveBeforeExit', handleSaveBeforeExit);
+    window.addEventListener("updateComponent", handleUpdateComponent);
+    window.addEventListener("deleteComponent", handleDeleteComponent);
+    window.addEventListener("clearCanvas", handleClearCanvas);
+    window.addEventListener("loadDesign", handleLoadDesign);
+    window.addEventListener("saveBeforeExit", handleSaveBeforeExit);
 
     return () => {
-      window.removeEventListener('updateComponent', handleUpdateComponent);
-      window.removeEventListener('deleteComponent', handleDeleteComponent);
-      window.removeEventListener('clearCanvas', handleClearCanvas);
-      window.removeEventListener('loadDesign', handleLoadDesign);
-      window.removeEventListener('saveBeforeExit', handleSaveBeforeExit);
+      window.removeEventListener("updateComponent", handleUpdateComponent);
+      window.removeEventListener("deleteComponent", handleDeleteComponent);
+      window.removeEventListener("clearCanvas", handleClearCanvas);
+      window.removeEventListener("loadDesign", handleLoadDesign);
+      window.removeEventListener("saveBeforeExit", handleSaveBeforeExit);
     };
   }, [cards]);
 
@@ -555,8 +586,8 @@ export function FlowCanvas() {
     };
 
     updateCanvasSize();
-    window.addEventListener('resize', updateCanvasSize);
-    return () => window.removeEventListener('resize', updateCanvasSize);
+    window.addEventListener("resize", updateCanvasSize);
+    return () => window.removeEventListener("resize", updateCanvasSize);
   }, []);
 
   // Auto-save functionality
@@ -601,8 +632,8 @@ export function FlowCanvas() {
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [cards, connections]);
 
   return (
@@ -621,15 +652,15 @@ export function FlowCanvas() {
           if (node) canvasRef.current = node;
         }}
         id="flow-canvas"
-        className={`relative size-full bg-background ${ 
-          isOver ? 'bg-accent' : ''
-        } ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`relative size-full bg-background ${
+          isOver ? "bg-accent" : ""
+        } ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
         onWheel={handleWheel}
         onMouseDown={handleCanvasMouseDown}
         onContextMenu={(e) => e.preventDefault()}
       >
         {/* Background grid */}
-        <div 
+        <div
           className="absolute inset-0 canvas-background-grid"
           style={{
             backgroundImage: `
@@ -645,12 +676,12 @@ export function FlowCanvas() {
         <div
           style={{
             transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
-            transformOrigin: '0 0',
-            position: 'absolute',
+            transformOrigin: "0 0",
+            position: "absolute",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
+            width: "100%",
+            height: "100%",
           }}
         >
           {/* SVG for connections */}
@@ -660,9 +691,9 @@ export function FlowCanvas() {
               const from = getCardCenter(conn.from);
               const to = getCardCenter(conn.to);
               const isHovered = hoveredConnection === conn.id;
-              
+
               return (
-                <g 
+                <g
                   key={conn.id}
                   className="pointer-events-auto cursor-pointer"
                   onMouseEnter={() => setHoveredConnection(conn.id)}
@@ -684,14 +715,16 @@ export function FlowCanvas() {
                     y1={from.y}
                     x2={to.x}
                     y2={to.y}
-                    stroke={isHovered ? '#ef4444' : '#3b82f6'}
-                    strokeWidth={isHovered ? '3' : '2'}
-                    markerEnd={isHovered ? 'url(#arrowhead-hover)' : 'url(#arrowhead)'}
+                    stroke={isHovered ? "#ef4444" : "#3b82f6"}
+                    strokeWidth={isHovered ? "3" : "2"}
+                    markerEnd={
+                      isHovered ? "url(#arrowhead-hover)" : "url(#arrowhead)"
+                    }
                   />
                 </g>
               );
             })}
-            
+
             {/* Render temporary connection */}
             {tempConnection && (
               <line
@@ -705,7 +738,7 @@ export function FlowCanvas() {
                 markerEnd="url(#arrowhead)"
               />
             )}
-            
+
             {/* Arrow marker definitions */}
             <defs>
               <marker
@@ -760,7 +793,9 @@ export function FlowCanvas() {
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center text-muted-foreground">
               <p>Drag components from the sidebar to get started</p>
-              <p className="mt-2">Click and drag to pan • Ctrl + Scroll to zoom</p>
+              <p className="mt-2">
+                Click and drag to pan • Ctrl + Scroll to zoom
+              </p>
             </div>
           </div>
         )}
@@ -808,7 +843,11 @@ export function FlowCanvas() {
 
       {/* Node Properties Drawer */}
       <NodePropertiesDrawer
-        selectedCard={selectedCardId ? cards.find(c => c.id === selectedCardId) || null : null}
+        selectedCard={
+          selectedCardId
+            ? cards.find((c) => c.id === selectedCardId) || null
+            : null
+        }
         open={selectedCardId !== null}
         onClose={() => setSelectedCardId(null)}
         onUpdateCard={handleUpdateCard}

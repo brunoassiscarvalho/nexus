@@ -6,10 +6,12 @@ import { FlowCanvas } from './components/FlowCanvas';
 import { ComponentDetailPage } from './components/ComponentDetailPage';
 import { ComponentEditPage } from './components/ComponentEditPage';
 import { DesignsListPage, Design } from './components/DesignsListPage';
+import { CreateDesignDialog } from './components/CreateDesignDialog';
 import { Toaster } from './components/ui/sonner';
 import { CardType } from './components/CardSidebar';
 import { Button } from './components/ui/button';
 import { ArrowLeft, Home } from 'lucide-react';
+import { toast } from 'sonner';
 
 type Page = 'list' | 'canvas' | 'detail' | 'edit';
 
@@ -28,6 +30,7 @@ export default function App() {
   const [components, setComponents] = useState<ComponentData[]>([]);
   const [currentDesignId, setCurrentDesignId] = useState<string | null>(null);
   const [designToLoad, setDesignToLoad] = useState<Design | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Listen for component double-click events from FlowCanvas
   useEffect(() => {
@@ -73,10 +76,47 @@ export default function App() {
   };
 
   const handleCreateNew = () => {
-    setCurrentDesignId(null);
-    setCurrentPage('canvas');
-    // Dispatch event to clear canvas
-    window.dispatchEvent(new CustomEvent('clearCanvas'));
+    // Show the create design dialog
+    setCreateDialogOpen(true);
+  };
+
+  const handleConfirmCreate = (name: string, description: string) => {
+    // Create the design immediately and save to localStorage
+    try {
+      const saved = localStorage.getItem('systemDesigns');
+      const designs = saved ? JSON.parse(saved) : [];
+      
+      const designId = `design-${Date.now()}`;
+      const newDesign: Design = {
+        id: designId,
+        name,
+        description,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        nodesCount: 0,
+        connectionsCount: 0,
+        data: {
+          cards: [],
+          connections: [],
+        },
+      };
+      
+      designs.push(newDesign);
+      localStorage.setItem('systemDesigns', JSON.stringify(designs));
+      
+      toast.success('Design created successfully');
+      
+      // Close the dialog
+      setCreateDialogOpen(false);
+      
+      // Navigate to canvas with this design loaded
+      setCurrentDesignId(designId);
+      setDesignToLoad(newDesign);
+      setCurrentPage('canvas');
+    } catch (error) {
+      console.error('Failed to create design:', error);
+      toast.error('Failed to create design');
+    }
   };
 
   const handleSelectDesign = (design: Design) => {
@@ -174,6 +214,11 @@ export default function App() {
         </div>
       </div>
       <Toaster />
+      <CreateDesignDialog
+        open={createDialogOpen}
+        onConfirm={handleConfirmCreate}
+        onCancel={() => setCreateDialogOpen(false)}
+      />
     </DndProvider>
   );
 }
