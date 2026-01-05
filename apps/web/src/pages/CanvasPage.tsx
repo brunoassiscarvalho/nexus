@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useFlow } from "../contexts/FlowContext";
-import { CardSidebar } from "../components/CardSidebar";
-import { FlowCanvas } from "../components/FlowCanvas";
-import { Button } from "../components/ui/button";
-import { Home } from "lucide-react";
+import { useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useFlow } from '../contexts/FlowContext';
+import { CardSidebar } from '../components/CardSidebar';
+import { FlowCanvas } from '../components/FlowCanvas';
+import { Button } from '../components/ui/button';
+import { Home } from 'lucide-react';
 
 export function CanvasPage() {
   const { designId } = useParams<{ designId: string }>();
@@ -18,7 +18,7 @@ export function CanvasPage() {
   }, [designId, loadDesign]);
 
   const handleBackToDesigns = () => {
-    navigate("/designs");
+    navigate('/designs');
   };
 
   if (!currentDesign) {
