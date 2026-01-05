@@ -401,6 +401,7 @@ export function FlowCanvas() {
         onMouseDown={handleCanvasMouseDown}
         onContextMenu={(e) => e.preventDefault()}
       >
+        {/* Background grid */}
         <div 
           className="absolute inset-0 canvas-background-grid"
           style={{
@@ -413,6 +414,7 @@ export function FlowCanvas() {
           }}
         />
 
+        {/* Canvas content with transform */}
         <div
           style={{
             transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
@@ -424,6 +426,7 @@ export function FlowCanvas() {
             height: '100%',
           }}
         >
+          {/* SVG for connections */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 connections-svg">
             {connections.map((conn) => {
               const from = getCardCenter(conn.from);
@@ -499,6 +502,7 @@ export function FlowCanvas() {
             </defs>
           </svg>
 
+          {/* Render cards */}
           {cards.map((card) => (
             <FlowCard
               key={card.id}
@@ -527,8 +531,7 @@ export function FlowCanvas() {
                 });
               }}
             />
-          ))}
-        </div>
+          ))}\n        </div>
 
         {cards.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
