@@ -7,22 +7,9 @@ import { CardContextMenu } from "./CardContextMenu";
 import { NodePropertiesDrawer } from "./NodePropertiesDrawer";
 import { Minimap } from "./Minimap";
 import { SaveDesignDialog } from "./SaveDesignDialog";
-import { toast } from "sonner@2.0.3";
-
-interface Card {
-  id: string;
-  type: CardType;
-  x: number;
-  y: number;
-  label: string;
-  description?: string;
-}
-
-interface Connection {
-  id: string;
-  from: string;
-  to: string;
-}
+import { toast } from "sonner";
+import { useCanvas, Card, Connection } from "../contexts/CanvasContext";
+import { useCanvasWebSocket } from "../hooks/useCanvasWebSocket";
 
 interface TempConnection {
   fromId: string;
@@ -40,16 +27,29 @@ interface ContextMenu {
   fromCardId: string | null;
 }
 
-export function FlowCanvas() {
-  const [cards, setCards] = useState<Card[]>([]);
-  const [connections, setConnections] = useState<Connection[]>([]);
+interface FlowCanvasProps {
+  onSelectComponent?: (id: string) => void;
+}
+
+export function FlowCanvas({ onSelectComponent }: FlowCanvasProps) {
+  const {
+    state,
+    addCard,
+    moveCard,
+    deleteCard,
+    addConnection,
+    deleteConnection,
+    updateCard,
+  } = useCanvasWebSocket();
+  const { loadDesign } = useCanvas();
+  const cards = state.cards;
+  const connections = state.connections;
   const [tempConnection, setTempConnection] = useState<TempConnection | null>(
     null
   );
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [isAutoSaving, setIsAutoSaving] = useState(false);
 
   // Zoom and pan state
   const [zoom, setZoom] = useState(1);
@@ -63,10 +63,7 @@ export function FlowCanvas() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const connectionCompletedRef = useRef(false);
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const currentDesignIdRef = useRef<string | null>(null);
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const initialLoadRef = useRef(false);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "CARD",
@@ -80,7 +77,7 @@ export function FlowCanvas() {
           const x = (offset.x - rect.left - panX) / zoom;
           const y = (offset.y - rect.top - panY) / zoom;
 
-          addCard(item.cardType, x, y);
+          handleAddCard(item.cardType, x, y);
         }
       }
     },
@@ -89,7 +86,7 @@ export function FlowCanvas() {
     }),
   }));
 
-  const addCard = (
+  const handleAddCard = (
     type: CardType,
     x: number,
     y: number,
@@ -102,7 +99,7 @@ export function FlowCanvas() {
       y,
       label: type.charAt(0).toUpperCase() + type.slice(1),
     };
-    setCards((prev) => [...prev, newCard]);
+    addCard(newCard);
 
     // If created from a connection, create the connection
     if (fromCardId) {
@@ -111,16 +108,14 @@ export function FlowCanvas() {
         from: fromCardId,
         to: newCard.id,
       };
-      setConnections((prev) => [...prev, newConnection]);
+      addConnection(newConnection);
     }
 
     return newCard.id;
   };
 
   const handleUpdatePosition = (id: string, x: number, y: number) => {
-    setCards((prev) =>
-      prev.map((card) => (card.id === id ? { ...card, x, y } : card))
-    );
+    moveCard(id, x, y);
   };
 
   const handleConnectionStart = (
@@ -185,7 +180,7 @@ export function FlowCanvas() {
         from: tempConnection.fromId,
         to: toId,
       };
-      setConnections((prev) => [...prev, newConnection]);
+      addConnection(newConnection);
       // Mark connection as completed
       connectionCompletedRef.current = true;
     }
@@ -193,10 +188,7 @@ export function FlowCanvas() {
   };
 
   const handleDeleteCard = (id: string) => {
-    setCards((prev) => prev.filter((card) => card.id !== id));
-    setConnections((prev) =>
-      prev.filter((conn) => conn.from !== id && conn.to !== id)
-    );
+    deleteCard(id);
     // Clear selection if deleted card was selected
     if (selectedCardId === id) {
       setSelectedCardId(null);
@@ -204,14 +196,12 @@ export function FlowCanvas() {
   };
 
   const handleDeleteConnection = (id: string) => {
-    setConnections((prev) => prev.filter((conn) => conn.id !== id));
+    deleteConnection(id);
     toast.success("Connection deleted");
   };
 
   const handleLabelChange = (id: string, label: string) => {
-    setCards((prev) =>
-      prev.map((card) => (card.id === id ? { ...card, label } : card))
-    );
+    updateCard(id, { label });
   };
 
   const handleSelectCard = (id: string) => {
@@ -219,15 +209,14 @@ export function FlowCanvas() {
   };
 
   const handleCardDoubleClick = (id: string) => {
-    // This will be handled by the parent component (App.tsx)
-    const event = new CustomEvent("openComponentDetail", { detail: { id } });
-    window.dispatchEvent(event);
+    // Call parent callback instead of dispatching event
+    if (onSelectComponent) {
+      onSelectComponent(id);
+    }
   };
 
   const handleUpdateCard = (id: string, updates: Partial<Card>) => {
-    setCards((prev) =>
-      prev.map((card) => (card.id === id ? { ...card, ...updates } : card))
-    );
+    updateCard(id, updates);
   };
 
   const getCardCenter = (cardId: string) => {
@@ -340,8 +329,7 @@ export function FlowCanvas() {
     reader.onload = (event) => {
       try {
         const data = JSON.parse(event.target?.result as string);
-        setCards(data.cards || []);
-        setConnections(data.connections || []);
+        loadDesign(data.cards || [], data.connections || [], null);
         toast.success("Flowchart imported successfully");
       } catch (error) {
         toast.error("Failed to import flowchart");
@@ -352,229 +340,6 @@ export function FlowCanvas() {
     // Reset input
     e.target.value = "";
   };
-
-  const handleContextMenuSelect = (type: CardType) => {
-    if (contextMenu) {
-      addCard(
-        type,
-        contextMenu.canvasX,
-        contextMenu.canvasY,
-        contextMenu.fromCardId || undefined
-      );
-      setContextMenu(null);
-    }
-  };
-
-  const handleSave = () => {
-    // Check if this is an existing design
-    if (currentDesignIdRef.current) {
-      // Auto-save existing design without asking for name
-      try {
-        const saved = localStorage.getItem("systemDesigns");
-        const designs = saved ? JSON.parse(saved) : [];
-
-        const existingIndex = designs.findIndex(
-          (d: any) => d.id === currentDesignIdRef.current
-        );
-
-        if (existingIndex >= 0) {
-          const existingDesign = designs[existingIndex];
-          designs[existingIndex] = {
-            ...existingDesign,
-            updatedAt: Date.now(),
-            nodesCount: cards.length,
-            connectionsCount: connections.length,
-            data: {
-              cards,
-              connections,
-            },
-          };
-
-          localStorage.setItem("systemDesigns", JSON.stringify(designs));
-          toast.success("Design updated successfully");
-          return true;
-        } else {
-          // Design ID exists but not found in storage, treat as new
-          setSaveDialogOpen(true);
-          return false;
-        }
-      } catch (error) {
-        toast.error("Failed to update design");
-        return false;
-      }
-    } else {
-      // New design, ask for name
-      setSaveDialogOpen(true);
-      return false;
-    }
-  };
-
-  const autoSaveDesign = () => {
-    // Only auto-save if there's a current design ID
-    if (currentDesignIdRef.current) {
-      try {
-        const saved = localStorage.getItem("systemDesigns");
-        const designs = saved ? JSON.parse(saved) : [];
-
-        const existingIndex = designs.findIndex(
-          (d: any) => d.id === currentDesignIdRef.current
-        );
-
-        if (existingIndex >= 0) {
-          const existingDesign = designs[existingIndex];
-          designs[existingIndex] = {
-            ...existingDesign,
-            updatedAt: Date.now(),
-            nodesCount: cards.length,
-            connectionsCount: connections.length,
-            data: {
-              cards,
-              connections,
-            },
-          };
-
-          localStorage.setItem("systemDesigns", JSON.stringify(designs));
-          console.log("Auto-saved design");
-        }
-      } catch (error) {
-        console.error("Auto-save failed:", error);
-      }
-    }
-  };
-
-  const handleSaveDesign = (name: string) => {
-    try {
-      const saved = localStorage.getItem("systemDesigns");
-      const designs = saved ? JSON.parse(saved) : [];
-
-      const designId = currentDesignIdRef.current || `design-${Date.now()}`;
-      const existingIndex = designs.findIndex((d: any) => d.id === designId);
-
-      const designData = {
-        id: designId,
-        name,
-        createdAt:
-          existingIndex >= 0 ? designs[existingIndex].createdAt : Date.now(),
-        updatedAt: Date.now(),
-        nodesCount: cards.length,
-        connectionsCount: connections.length,
-        data: {
-          cards,
-          connections,
-        },
-      };
-
-      console.log("Saving design:", designData);
-
-      if (existingIndex >= 0) {
-        designs[existingIndex] = designData;
-        toast.success("Design updated successfully");
-      } else {
-        designs.push(designData);
-        toast.success("Design saved successfully");
-      }
-
-      localStorage.setItem("systemDesigns", JSON.stringify(designs));
-      currentDesignIdRef.current = designId;
-
-      console.log("Saved designs in localStorage:", designs);
-    } catch (error) {
-      console.error("Save error:", error);
-      toast.error("Failed to save design");
-    }
-  };
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Save shortcut
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault();
-        handleSave();
-      }
-      // Zoom shortcuts
-      if ((e.ctrlKey || e.metaKey) && e.key === "0") {
-        e.preventDefault();
-        handleResetView();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "=") {
-        e.preventDefault();
-        handleZoomIn();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "-") {
-        e.preventDefault();
-        handleZoomOut();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  // Emit components update event whenever cards change
-  useEffect(() => {
-    const event = new CustomEvent("componentsUpdated", {
-      detail: { components: cards },
-    });
-    window.dispatchEvent(event);
-  }, [cards]);
-
-  // Listen for component update/delete events from App
-  useEffect(() => {
-    const handleUpdateComponent = (e: Event) => {
-      const customEvent = e as CustomEvent<{
-        id: string;
-        updates: Partial<Card>;
-      }>;
-      handleUpdateCard(customEvent.detail.id, customEvent.detail.updates);
-    };
-
-    const handleDeleteComponent = (e: Event) => {
-      const customEvent = e as CustomEvent<{ id: string }>;
-      handleDeleteCard(customEvent.detail.id);
-    };
-
-    const handleClearCanvas = () => {
-      setCards([]);
-      setConnections([]);
-      currentDesignIdRef.current = null;
-    };
-
-    const handleLoadDesign = (e: Event) => {
-      const customEvent = e as CustomEvent<{
-        id: string;
-        data: { cards: Card[]; connections: Connection[] };
-      }>;
-      console.log("Loading design:", customEvent.detail);
-      setCards(customEvent.detail.data.cards || []);
-      setConnections(customEvent.detail.data.connections || []);
-      currentDesignIdRef.current = customEvent.detail.id;
-      // Reset initial load flag to prevent immediate autosave after loading
-      initialLoadRef.current = false;
-      toast.success("Design loaded successfully");
-    };
-
-    const handleSaveBeforeExit = () => {
-      // Save the current design before navigating away
-      if (currentDesignIdRef.current) {
-        autoSaveDesign();
-      }
-    };
-
-    window.addEventListener("updateComponent", handleUpdateComponent);
-    window.addEventListener("deleteComponent", handleDeleteComponent);
-    window.addEventListener("clearCanvas", handleClearCanvas);
-    window.addEventListener("loadDesign", handleLoadDesign);
-    window.addEventListener("saveBeforeExit", handleSaveBeforeExit);
-
-    return () => {
-      window.removeEventListener("updateComponent", handleUpdateComponent);
-      window.removeEventListener("deleteComponent", handleDeleteComponent);
-      window.removeEventListener("clearCanvas", handleClearCanvas);
-      window.removeEventListener("loadDesign", handleLoadDesign);
-      window.removeEventListener("saveBeforeExit", handleSaveBeforeExit);
-    };
-  }, [cards]);
 
   // Track canvas size for minimap
   useEffect(() => {
@@ -590,68 +355,59 @@ export function FlowCanvas() {
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, []);
 
-  // Auto-save functionality
-  useEffect(() => {
-    // Skip the initial render when component mounts or design loads
-    if (!initialLoadRef.current) {
-      initialLoadRef.current = true;
-      return;
+  const handleContextMenuSelect = (type: CardType) => {
+    if (contextMenu) {
+      handleAddCard(
+        type,
+        contextMenu.canvasX,
+        contextMenu.canvasY,
+        contextMenu.fromCardId || undefined
+      );
+      setContextMenu(null);
     }
+  };
 
-    // Only auto-save if there's a current design ID (saved design)
-    if (currentDesignIdRef.current) {
-      // Clear any existing timeout
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
+  const handleSaveDesign = (name: string) => {
+    try {
+      const saved = localStorage.getItem("systemDesigns");
+      const designs = saved ? JSON.parse(saved) : [];
 
-      // Show autosaving indicator
-      setIsAutoSaving(true);
+      const designId = `design-${Date.now()}`;
+      const designData = {
+        id: designId,
+        name,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        nodesCount: cards.length,
+        connectionsCount: connections.length,
+        data: {
+          cards,
+          connections,
+        },
+      };
 
-      // Set timeout for auto-save (2 seconds after last change)
-      autoSaveTimeoutRef.current = setTimeout(() => {
-        autoSaveDesign();
-        setIsAutoSaving(false);
-      }, 2000);
+      designs.push(designData);
+      localStorage.setItem("systemDesigns", JSON.stringify(designs));
+      toast.success("Design saved successfully");
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("Failed to save design");
     }
+  };
 
-    // Cleanup timeout on unmount
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-    };
-  }, [cards, connections]);
-
-  // Save on page unload (beforeunload)
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Save if there's a current design
-      if (currentDesignIdRef.current) {
-        autoSaveDesign();
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [cards, connections]);
+  // Keyboard shortcuts
 
   return (
-    <div className="relative flex-1 overflow-hidden">
-      {/* Auto-save indicator */}
-      {isAutoSaving && currentDesignIdRef.current && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-background border border-border rounded-lg px-4 py-2 shadow-lg flex items-center gap-2">
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-          <span className="text-muted-foreground">Auto-saving...</span>
-        </div>
-      )}
-
+    <div className="w-full h-full relative flex-1 overflow-hidden">
       <div
-        ref={(node) => {
+        ref={(node: HTMLDivElement | null) => {
           drop(node);
           if (node) canvasRef.current = node;
         }}
         id="flow-canvas"
+        role="application"
+        tabIndex={0}
+        aria-label="Flow canvas for designing workflows"
         className={`relative size-full bg-background ${
           isOver ? "bg-accent" : ""
         } ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}

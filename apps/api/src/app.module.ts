@@ -1,19 +1,18 @@
-import { Module, ValidationPipe } from "@nestjs/common";
-import { MongooseModule } from "@nestjs/mongoose";
-import { APP_PIPE } from "@nestjs/core";
-import { AuthModule } from "./auth/auth.module";
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { CanvasModule } from './canvas/canvas.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot("mongodb://localhost:27017/nexus"),
-
-    AuthModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env.local', '.env'],
+    }),
+    CanvasModule,
   ],
-  providers: [
-    {
-      provide: APP_PIPE,
-      useClass: ValidationPipe,
-    },
-  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
