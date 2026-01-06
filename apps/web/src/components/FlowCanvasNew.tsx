@@ -1,15 +1,15 @@
-import { useState, useRef, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useDrop } from "react-dnd";
-import { useFlow, Card, Connection } from "../contexts/FlowContext";
-import { FlowCard } from "./FlowCard";
-import { CardType } from "./CardSidebar";
-import { CanvasControls } from "./CanvasControls";
-import { CardContextMenu } from "./CardContextMenu";
-import { PropertiesPanel } from "./PropertiesPanel";
-import { ContextMenu } from "./ContextMenu";
-import { Minimap } from "./Minimap";
-import { toast } from "sonner@2.0.3";
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useDrop } from 'react-dnd';
+import { useFlow, Card, Connection } from '../contexts/FlowContext';
+import { FlowCard } from './FlowCard';
+import { CardType } from './CardSidebar';
+import { CanvasControls } from './CanvasControls';
+import { CardContextMenu } from './CardContextMenu';
+import { PropertiesPanel } from './PropertiesPanel';
+import { ContextMenu } from './ContextMenu';
+import { Minimap } from './Minimap';
+import { toast } from 'sonner@2.0.3';
 
 interface TempConnection {
   fromId: string;
@@ -31,37 +31,26 @@ export function FlowCanvas() {
   const navigate = useNavigate();
   const { designId } = useParams<{ designId: string }>();
   const { currentDesign, updateCanvasData, autoSave } = useFlow();
-
+  
   // Local state for canvas data
   const [cards, setCards] = useState<Card[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
-
+  
   // UI state
-  const [tempConnection, setTempConnection] = useState<TempConnection | null>(
-    null
-  );
+  const [tempConnection, setTempConnection] = useState<TempConnection | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-  const [selectedConnectionId, setSelectedConnectionId] = useState<
-    string | null
-  >(null);
-  const [rightClickMenu, setRightClickMenu] = useState<{
-    x: number;
-    y: number;
-    type: "node" | "connection";
-    targetId: string;
-  } | null>(null);
-
+  const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
+  const [rightClickMenu, setRightClickMenu] = useState<{ x: number; y: number; type: 'node' | 'connection'; targetId: string } | null>(null);
+  
   // Zoom and pan state
   const [zoom, setZoom] = useState(1);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
   const [isPanning, setIsPanning] = useState(false);
-  const [hoveredConnection, setHoveredConnection] = useState<string | null>(
-    null
-  );
+  const [hoveredConnection, setHoveredConnection] = useState<string | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const connectionCompletedRef = useRef(false);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -77,12 +66,7 @@ export function FlowCanvas() {
 
   // Auto-save to context when cards or connections change
   useEffect(() => {
-    if (
-      currentDesign &&
-      (cards.length > 0 ||
-        connections.length > 0 ||
-        currentDesign.data.cards.length > 0)
-    ) {
+    if (currentDesign && (cards.length > 0 || connections.length > 0 || currentDesign.data.cards.length > 0)) {
       // Clear any existing timeout
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current);
@@ -103,11 +87,11 @@ export function FlowCanvas() {
   }, [cards, connections]);
 
   const [{ isOver }, drop] = useDrop(() => ({
-    accept: "CARD",
+    accept: 'CARD',
     drop: (item: { cardType: CardType }, monitor) => {
       const offset = monitor.getClientOffset();
       if (offset) {
-        const canvas = document.getElementById("flow-canvas");
+        const canvas = document.getElementById('flow-canvas');
         if (canvas) {
           const rect = canvas.getBoundingClientRect();
           const x = (offset.x - rect.left - panX) / zoom;
@@ -121,12 +105,7 @@ export function FlowCanvas() {
     }),
   }));
 
-  const addCard = (
-    type: CardType,
-    x: number,
-    y: number,
-    fromCardId?: string
-  ) => {
+  const addCard = (type: CardType, x: number, y: number, fromCardId?: string) => {
     const newCard: Card = {
       id: `card-${Date.now()}-${Math.random()}`,
       type,
@@ -135,7 +114,7 @@ export function FlowCanvas() {
       label: type.charAt(0).toUpperCase() + type.slice(1),
     };
     setCards((prev) => [...prev, newCard]);
-
+    
     if (fromCardId) {
       const newConnection: Connection = {
         id: `conn-${Date.now()}`,
@@ -152,20 +131,16 @@ export function FlowCanvas() {
     );
   };
 
-  const handleConnectionStart = (
-    fromId: string,
-    fromX: number,
-    fromY: number
-  ) => {
-    const canvas = document.getElementById("flow-canvas");
+  const handleConnectionStart = (fromId: string, fromX: number, fromY: number) => {
+    const canvas = document.getElementById('flow-canvas');
     if (!canvas) return;
-
+    
     const rect = canvas.getBoundingClientRect();
     const canvasX = (fromX - rect.left - panX) / zoom;
     const canvasY = (fromY - rect.top - panY) / zoom;
-
+    
     connectionCompletedRef.current = false;
-
+    
     setTempConnection({
       fromId,
       fromX: canvasX,
@@ -177,7 +152,7 @@ export function FlowCanvas() {
     const handleMouseMove = (e: MouseEvent) => {
       const x = (e.clientX - rect.left - panX) / zoom;
       const y = (e.clientY - rect.top - panY) / zoom;
-      setTempConnection((prev) => (prev ? { ...prev, toX: x, toY: y } : null));
+      setTempConnection((prev) => prev ? { ...prev, toX: x, toY: y } : null);
     };
 
     const handleMouseUp = (e: MouseEvent) => {
@@ -186,7 +161,7 @@ export function FlowCanvas() {
         const screenY = e.clientY;
         const canvasX = (screenX - rect.left - panX) / zoom;
         const canvasY = (screenY - rect.top - panY) / zoom;
-
+        
         setContextMenu({
           x: screenX,
           y: screenY,
@@ -195,14 +170,14 @@ export function FlowCanvas() {
           fromCardId: fromId,
         });
       }
-
+      
       setTempConnection(null);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
   const handleConnectionEnd = (toId: string) => {
@@ -220,9 +195,7 @@ export function FlowCanvas() {
 
   const handleDeleteCard = (id: string) => {
     setCards((prev) => prev.filter((card) => card.id !== id));
-    setConnections((prev) =>
-      prev.filter((conn) => conn.from !== id && conn.to !== id)
-    );
+    setConnections((prev) => prev.filter((conn) => conn.from !== id && conn.to !== id));
     if (selectedCardId === id) {
       setSelectedCardId(null);
     }
@@ -233,7 +206,7 @@ export function FlowCanvas() {
     if (selectedConnectionId === id) {
       setSelectedConnectionId(null);
     }
-    toast.success("Connection deleted");
+    toast.success('Connection deleted');
   };
 
   const handleUpdateConnection = (id: string, updates: Partial<Connection>) => {
@@ -285,26 +258,26 @@ export function FlowCanvas() {
 
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
-
+    
     const target = e.target as HTMLElement;
-    const isInteractiveElement =
-      target.closest("[data-flow-card]") ||
-      target.closest("button") ||
-      target.closest("input") ||
+    const isInteractiveElement = 
+      target.closest('[data-flow-card]') ||
+      target.closest('button') ||
+      target.closest('input') ||
       target.closest('[role="dialog"]') ||
-      target.closest(".minimap") ||
-      target.closest("[data-interactive]");
-
+      target.closest('.minimap') ||
+      target.closest('[data-interactive]');
+    
     if (isInteractiveElement) return;
-
+    
     // Deselect both when clicking on canvas background
     setSelectedCardId(null);
     setSelectedConnectionId(null);
-
+    
     e.preventDefault();
     e.stopPropagation();
     setIsPanning(true);
-
+    
     const startX = e.clientX;
     const startY = e.clientY;
     const startPanX = panX;
@@ -319,12 +292,12 @@ export function FlowCanvas() {
 
     const handleMouseUp = () => {
       setIsPanning(false);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
   const handleZoomIn = () => setZoom((prev) => Math.min(prev * 1.2, 3));
@@ -336,18 +309,18 @@ export function FlowCanvas() {
   };
 
   const handleExport = () => {
-    const data = { cards, connections, version: "1.0" };
+    const data = { cards, connections, version: '1.0' };
     const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
+    const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `flowchart-${Date.now()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success("Flowchart exported successfully");
+    toast.success('Flowchart exported successfully');
   };
 
   const handleImport = () => fileInputRef.current?.click();
@@ -362,23 +335,18 @@ export function FlowCanvas() {
         const data = JSON.parse(event.target?.result as string);
         setCards(data.cards || []);
         setConnections(data.connections || []);
-        toast.success("Flowchart imported successfully");
+        toast.success('Flowchart imported successfully');
       } catch (error) {
-        toast.error("Failed to import flowchart");
+        toast.error('Failed to import flowchart');
       }
     };
     reader.readAsText(file);
-    e.target.value = "";
+    e.target.value = '';
   };
 
   const handleContextMenuSelect = (type: CardType) => {
     if (contextMenu) {
-      addCard(
-        type,
-        contextMenu.canvasX,
-        contextMenu.canvasY,
-        contextMenu.fromCardId || undefined
-      );
+      addCard(type, contextMenu.canvasX, contextMenu.canvasY, contextMenu.fromCardId || undefined);
       setContextMenu(null);
     }
   };
@@ -393,29 +361,29 @@ export function FlowCanvas() {
     };
 
     updateCanvasSize();
-    window.addEventListener("resize", updateCanvasSize);
-    return () => window.removeEventListener("resize", updateCanvasSize);
+    window.addEventListener('resize', updateCanvasSize);
+    return () => window.removeEventListener('resize', updateCanvasSize);
   }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "0") {
+      if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault();
         handleResetView();
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "=") {
+      if ((e.ctrlKey || e.metaKey) && e.key === '=') {
         e.preventDefault();
         handleZoomIn();
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "-") {
+      if ((e.ctrlKey || e.metaKey) && e.key === '-') {
         e.preventDefault();
         handleZoomOut();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
@@ -426,14 +394,15 @@ export function FlowCanvas() {
           if (node) canvasRef.current = node;
         }}
         id="flow-canvas"
-        className={`relative size-full bg-background ${
-          isOver ? "bg-accent" : ""
-        } ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
+        className={`relative size-full bg-background ${ 
+          isOver ? 'bg-accent' : ''
+        } ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
         onWheel={handleWheel}
         onMouseDown={handleCanvasMouseDown}
         onContextMenu={(e) => e.preventDefault()}
       >
-        <div
+        {/* Background grid */}
+        <div 
           className="absolute inset-0 canvas-background-grid"
           style={{
             backgroundImage: `
@@ -445,26 +414,28 @@ export function FlowCanvas() {
           }}
         />
 
+        {/* Canvas content with transform */}
         <div
           style={{
             transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
-            transformOrigin: "0 0",
-            position: "absolute",
+            transformOrigin: '0 0',
+            position: 'absolute',
             top: 0,
             left: 0,
-            width: "100%",
-            height: "100%",
+            width: '100%',
+            height: '100%',
           }}
         >
+          {/* SVG for connections */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 connections-svg">
             {connections.map((conn) => {
               const from = getCardCenter(conn.from);
               const to = getCardCenter(conn.to);
               const isHovered = hoveredConnection === conn.id;
               const isSelected = selectedConnectionId === conn.id;
-
+              
               return (
-                <g
+                <g 
                   key={conn.id}
                   className="pointer-events-auto cursor-pointer"
                   onMouseEnter={() => setHoveredConnection(conn.id)}
@@ -479,8 +450,8 @@ export function FlowCanvas() {
                     setRightClickMenu({
                       x: e.clientX,
                       y: e.clientY,
-                      type: "connection",
-                      targetId: conn.id,
+                      type: 'connection',
+                      targetId: conn.id
                     });
                   }}
                 >
@@ -497,22 +468,14 @@ export function FlowCanvas() {
                     y1={from.y}
                     x2={to.x}
                     y2={to.y}
-                    stroke={
-                      isSelected ? "#10b981" : isHovered ? "#ef4444" : "#3b82f6"
-                    }
-                    strokeWidth={isSelected ? "3" : isHovered ? "3" : "2"}
-                    markerEnd={
-                      isSelected
-                        ? "url(#arrowhead-selected)"
-                        : isHovered
-                          ? "url(#arrowhead-hover)"
-                          : "url(#arrowhead)"
-                    }
+                    stroke={isSelected ? '#10b981' : isHovered ? '#ef4444' : '#3b82f6'}
+                    strokeWidth={isSelected ? '3' : isHovered ? '3' : '2'}
+                    markerEnd={isSelected ? 'url(#arrowhead-selected)' : isHovered ? 'url(#arrowhead-hover)' : 'url(#arrowhead)'}
                   />
                 </g>
               );
             })}
-
+            
             {tempConnection && (
               <line
                 x1={tempConnection.fromX}
@@ -525,41 +488,21 @@ export function FlowCanvas() {
                 markerEnd="url(#arrowhead)"
               />
             )}
-
+            
             <defs>
-              <marker
-                id="arrowhead"
-                markerWidth="10"
-                markerHeight="10"
-                refX="9"
-                refY="3"
-                orient="auto"
-              >
+              <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
                 <polygon points="0 0, 10 3, 0 6" fill="#3b82f6" />
               </marker>
-              <marker
-                id="arrowhead-hover"
-                markerWidth="10"
-                markerHeight="10"
-                refX="9"
-                refY="3"
-                orient="auto"
-              >
+              <marker id="arrowhead-hover" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
                 <polygon points="0 0, 10 3, 0 6" fill="#ef4444" />
               </marker>
-              <marker
-                id="arrowhead-selected"
-                markerWidth="10"
-                markerHeight="10"
-                refX="9"
-                refY="3"
-                orient="auto"
-              >
+              <marker id="arrowhead-selected" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
                 <polygon points="0 0, 10 3, 0 6" fill="#10b981" />
               </marker>
             </defs>
           </svg>
 
+          {/* Render cards */}
           {cards.map((card) => (
             <FlowCard
               key={card.id}
@@ -583,21 +526,18 @@ export function FlowCanvas() {
                 setRightClickMenu({
                   x,
                   y,
-                  type: "node",
-                  targetId: id,
+                  type: 'node',
+                  targetId: id
                 });
               }}
             />
-          ))}
-        </div>
+          ))}\n        </div>
 
         {cards.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center text-muted-foreground">
               <p>Drag components from the sidebar to get started</p>
-              <p className="mt-2">
-                Click and drag to pan • Ctrl + Scroll to zoom
-              </p>
+              <p className="mt-2">Click and drag to pan • Ctrl + Scroll to zoom</p>
             </div>
           </div>
         )}
@@ -637,7 +577,7 @@ export function FlowCanvas() {
           y={rightClickMenu.y}
           type={rightClickMenu.type}
           onDelete={() => {
-            if (rightClickMenu.type === "node") {
+            if (rightClickMenu.type === 'node') {
               handleDeleteCard(rightClickMenu.targetId);
             } else {
               handleDeleteConnection(rightClickMenu.targetId);
@@ -645,21 +585,17 @@ export function FlowCanvas() {
             setRightClickMenu(null);
           }}
           onEdit={() => {
-            if (rightClickMenu.type === "node") {
+            if (rightClickMenu.type === 'node') {
               handleSelectCard(rightClickMenu.targetId);
             } else {
               handleSelectConnection(rightClickMenu.targetId);
             }
             setRightClickMenu(null);
           }}
-          onViewDetails={
-            rightClickMenu.type === "node"
-              ? () => {
-                  handleCardDoubleClick(rightClickMenu.targetId);
-                  setRightClickMenu(null);
-                }
-              : undefined
-          }
+          onViewDetails={rightClickMenu.type === 'node' ? () => {
+            handleCardDoubleClick(rightClickMenu.targetId);
+            setRightClickMenu(null);
+          } : undefined}
           onClose={() => setRightClickMenu(null)}
         />
       )}
@@ -673,20 +609,12 @@ export function FlowCanvas() {
       />
 
       <PropertiesPanel
-        selectedNode={
-          selectedCardId
-            ? cards.find((c) => c.id === selectedCardId) || null
-            : null
-        }
-        selectedConnection={
-          selectedConnectionId
-            ? connections.find((c) => c.id === selectedConnectionId) || null
-            : null
-        }
+        selectedNode={selectedCardId ? cards.find(c => c.id === selectedCardId) || null : null}
+        selectedConnection={selectedConnectionId ? connections.find(c => c.id === selectedConnectionId) || null : null}
         dashboardStats={{
           totalNodes: cards.length,
           totalConnections: connections.length,
-          designName: currentDesign?.name,
+          designName: currentDesign?.name
         }}
         onUpdateNode={handleUpdateCard}
         onUpdateConnection={handleUpdateConnection}
